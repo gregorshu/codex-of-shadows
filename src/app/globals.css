@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background: #0f1116;
+  color: #e5e7eb;
+  font-family: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.border-outline {
+  border-color: #2c3038;
+}
+
+.card-surface {
+  background: #16181d;
+}
+
+.card-strong {
+  background: #1d2026;
+}
+
+.text-subtle {
+  color: #9ca3af;
+}
+
+input, textarea, select {
+  background: #0f1116;
+  border-color: #2c3038;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #2c3038;
+  border-radius: 999px;
+}
