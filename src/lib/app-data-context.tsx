@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { AppData, Investigator, Scenario, Session } from "@/types";
 import { loadAppData, saveAppData } from "@/lib/storage";
-import { nanoid } from "nanoid";
 
 interface AppDataContextValue {
   data: AppData;
@@ -89,5 +88,9 @@ export function useAppData() {
 }
 
 export function createId() {
-  return nanoid();
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return Math.random().toString(36).slice(2, 10);
 }
