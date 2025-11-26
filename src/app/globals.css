@@ -34,6 +34,54 @@
   --button-ghost-hover: #e2e8f0;
 }
 
+:root[data-theme="green"] {
+  color-scheme: dark;
+  --bg: #0b1310;
+  --text-primary: #e7f6ed;
+  --text-muted: #9fb7a6;
+  --surface: #0f1c16;
+  --surface-strong: #13241d;
+  --chip: #183026;
+  --border: #1f3a2d;
+  --button-primary-bg: #34d399;
+  --button-primary-text: #07130e;
+  --button-primary-hover: #4adeb5;
+  --button-ghost-text: #e7f6ed;
+  --button-ghost-hover: #1b2f24;
+}
+
+:root[data-theme="blue"] {
+  color-scheme: dark;
+  --bg: #0c1220;
+  --text-primary: #e3eaf5;
+  --text-muted: #9db2d3;
+  --surface: #111a2d;
+  --surface-strong: #16233a;
+  --chip: #1f2f4a;
+  --border: #243754;
+  --button-primary-bg: #3b82f6;
+  --button-primary-text: #0b1220;
+  --button-primary-hover: #60a5fa;
+  --button-ghost-text: #e3eaf5;
+  --button-ghost-hover: #1a2a44;
+}
+
+:root[data-theme="red"] {
+  color-scheme: dark;
+  --bg: #170c12;
+  --text-primary: #f8e8ec;
+  --text-muted: #f2b8c1;
+  --surface: #1d1118;
+  --surface-strong: #251520;
+  --chip: #311a27;
+  --border: #3d1f2d;
+  --button-primary-bg: #f87171;
+  --button-primary-text: #170c12;
+  --button-primary-hover: #fca5a5;
+  --button-ghost-text: #f8e8ec;
+  --button-ghost-hover: #2a1a22;
+}
+
 body {
   background: var(--bg);
   color: var(--text-primary);
