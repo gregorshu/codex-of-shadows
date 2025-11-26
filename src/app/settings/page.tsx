@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useAppData } from "@/lib/app-data-context";
-import { KeeperLanguage } from "@/types";
+import { KeeperLanguage, KeeperTheme } from "@/types";
 import { LANGUAGE_NATIVE_NAMES, useTranslation } from "@/lib/i18n";
 
 export default function SettingsPage() {
@@ -14,7 +14,7 @@ export default function SettingsPage() {
   const { t } = useTranslation();
 
   const [language, setLanguage] = useState<KeeperLanguage>(data.settings.language);
-  const [theme, setTheme] = useState<"light" | "dark" | "system">(data.settings.theme);
+  const [theme, setTheme] = useState<KeeperTheme>(data.settings.theme);
   const [model, setModel] = useState(data.settings.llm.model);
   const [baseUrl, setBaseUrl] = useState(data.settings.llm.baseUrl ?? "");
   const [apiKey, setApiKey] = useState(data.settings.llm.apiKey ?? "");
@@ -88,12 +88,15 @@ export default function SettingsPage() {
                 <span className="text-subtle">{t("settingsThemeLabel")}</span>
                 <select
                   value={theme}
-                  onChange={(event) => setTheme(event.target.value as "light" | "dark" | "system")}
+                  onChange={(event) => setTheme(event.target.value as KeeperTheme)}
                   className="rounded-lg border border-outline bg-[var(--bg)] px-3 py-2 text-sm text-[color:var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-slate-400/50"
                 >
                   <option value="dark">{t("themeOptionDark")}</option>
                   <option value="light">{t("themeOptionLight")}</option>
                   <option value="system">{t("themeOptionSystem")}</option>
+                  <option value="green">{t("themeOptionGreen")}</option>
+                  <option value="blue">{t("themeOptionBlue")}</option>
+                  <option value="red">{t("themeOptionRed")}</option>
                 </select>
               </label>
             </div>

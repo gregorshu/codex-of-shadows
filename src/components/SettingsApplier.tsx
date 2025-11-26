@@ -2,14 +2,20 @@
 
 import { useEffect } from "react";
 import { useAppData } from "@/lib/app-data-context";
+import { KeeperTheme } from "@/types";
 
 type ResolvedTheme = "light" | "dark";
 
-function resolveTheme(preference: "light" | "dark" | "system", mediaQuery: MediaQueryList): ResolvedTheme {
+function resolveColorScheme(preference: KeeperTheme, mediaQuery: MediaQueryList): ResolvedTheme {
   if (preference === "system") {
     return mediaQuery.matches ? "dark" : "light";
   }
-  return preference;
+
+  if (preference === "light") {
+    return "light";
+  }
+
+  return "dark";
 }
 
 export function SettingsApplier() {
@@ -19,9 +25,9 @@ export function SettingsApplier() {
     const root = document.documentElement;
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
-    const applyTheme = (nextTheme: "light" | "dark" | "system") => {
-      const resolved = resolveTheme(nextTheme, mediaQuery);
-      root.dataset.theme = resolved;
+    const applyTheme = (nextTheme: KeeperTheme) => {
+      const resolved = resolveColorScheme(nextTheme, mediaQuery);
+      root.dataset.theme = nextTheme === "system" ? resolved : nextTheme;
       root.classList.toggle("dark", resolved === "dark");
       root.classList.toggle("light", resolved === "light");
     };

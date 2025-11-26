@@ -1,5 +1,7 @@
 export type KeeperLanguage = "en" | "ru" | "fr" | "es";
 
+export type KeeperTheme = "light" | "dark" | "system" | "green" | "blue" | "red";
+
 export type ScenarioSource = "predefined" | "custom";
 
 export type SessionStatus = "setup" | "active" | "completed" | "abandoned";
@@ -8,7 +10,7 @@ export type ChatRole = "player" | "keeper" | "system";
 
 export interface AppSettings {
   language: KeeperLanguage;
-  theme: "light" | "dark" | "system";
+  theme: KeeperTheme;
   llm: {
     model: string;
     baseUrl?: string;
