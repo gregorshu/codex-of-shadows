@@ -59,10 +59,15 @@ export default function InvestigatorWizardPage() {
 
     const normalizeKey = (key: string) => key.toLowerCase().replace(/[^a-z]/g, "");
 
-    const parseStructuredResponse = (response: string) => {
-      const sanitized = response
-        .replace(/```json\s*|```/gi, "")
+    const stripFormatting = (raw: string) =>
+      raw
+        .replace(/```[a-z]*\s*/gi, "")
+        .replace(/```/g, "")
+        .replace(/^json\s*/i, "")
         .trim();
+
+    const parseStructuredResponse = (response: string) => {
+      const sanitized = stripFormatting(response);
 
       const jsonMatch = sanitized.match(/\{[\s\S]*\}/);
       if (!jsonMatch) return null;
@@ -115,7 +120,7 @@ export default function InvestigatorWizardPage() {
             { role: "user", content: prompt },
           ],
         });
-        const fullText = await readLLMStream(stream);
+        const fullText = stripFormatting(await readLLMStream(stream));
         const lines = fullText
           .split("\n")
           .map((line) => line.trim())
@@ -143,18 +148,21 @@ export default function InvestigatorWizardPage() {
               .map((trait) => trait.split(/\s+/).slice(0, 2).join(" "))
               .slice(0, 3);
 
+        const background = cleanValue(
+          structured?.background || parsed.background || lines.slice(2, 5).join(" "),
+        );
+        const skillsSummary = cleanValue(
+          structured?.skills || parsed.skills || parsed.mainskills || lines.slice(4).join(" "),
+        );
+
         setInvestigator((prev) => ({
           ...prev,
           name: cleanValue(structured?.name || parsed.name || lines[0] || "") || fallback.name,
           occupation: cleanValue(structured?.occupation || parsed.occupation || lines[1] || "") ||
             fallback.occupation,
-          background:
-            cleanValue(structured?.background || parsed.background || lines.slice(2, 4).join(" ")) ||
-            fallback.background,
+          background: background || fallback.background,
           personalityTraits: generatedTraits.length ? generatedTraits : fallback.traits,
-          skillsSummary:
-            cleanValue(structured?.skills || parsed.skills || parsed.mainskills || lines.slice(4).join(" ")) ||
-            fallback.skills,
+          skillsSummary: skillsSummary || fallback.skills,
         }));
       } else {
         setInvestigator((prev) => ({
