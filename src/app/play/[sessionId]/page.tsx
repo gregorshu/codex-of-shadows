@@ -24,6 +24,7 @@ export default function PlayPage() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [editMessageId, setEditMessageId] = useState<string | null>(null);
   const messageEndRef = useRef<HTMLDivElement | null>(null);
+  const keeperIntroStartedRef = useRef(false);
   const roleLabels: Record<ChatMessage["role"], string> = {
     player: t("rolePlayer"),
     keeper: t("roleKeeper"),
@@ -33,6 +34,91 @@ export default function PlayPage() {
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [session?.chat.length]);
+
+  useEffect(() => {
+    keeperIntroStartedRef.current = false;
+  }, [session?.id]);
+
+  useEffect(() => {
+    if (!session || !scenario || !investigator) return;
+    if (session.chat.length > 0) return;
+    if (isStreaming || keeperIntroStartedRef.current) return;
+
+    keeperIntroStartedRef.current = true;
+    void startKeeperIntro();
+  }, [investigator, isStreaming, scenario, session]);
+
+  const startKeeperIntro = async () => {
+    if (!session || !scenario || !investigator) return;
+    const now = new Date().toISOString();
+    const baseMessages = [...session.chat];
+
+    const updatedSession = {
+      ...session,
+      chat: baseMessages,
+      updatedAt: now,
+    };
+
+    const keeperMessage: ChatMessage = {
+      id: createId(),
+      sessionId: session.id,
+      role: "keeper",
+      content: "",
+      createdAt: new Date().toISOString(),
+    };
+
+    const introPrompt = t("keeperIntroPrompt", {
+      investigator: investigator.name,
+      scenario: scenario.name,
+    });
+
+    setIsStreaming(true);
+
+    try {
+      if (data.settings.llm.apiKey) {
+        const stream = await callKeeper({
+          session: updatedSession,
+          scenario,
+          investigator,
+          newUserMessage: introPrompt,
+          llmConfig: data.settings.llm,
+          keeperSystemPrompt: data.settings.keeperSystemPrompt,
+          messages: baseMessages,
+        });
+        let fullText = "";
+        await readLLMStream(stream, (token) => {
+          fullText += token;
+          upsertSession({
+            ...updatedSession,
+            chat: [...baseMessages, { ...keeperMessage, content: fullText }],
+          });
+        });
+        upsertSession({
+          ...updatedSession,
+          chat: [...baseMessages, { ...keeperMessage, content: fullText }],
+          lastOpenedAt: new Date().toISOString(),
+        });
+      } else {
+        upsertSession({
+          ...updatedSession,
+          chat: [
+            ...baseMessages,
+            { ...keeperMessage, content: t("keeperIntroFallback") },
+          ],
+          lastOpenedAt: new Date().toISOString(),
+        });
+      }
+    } catch (error) {
+      console.error("LLM intro failed", error);
+      upsertSession({
+        ...updatedSession,
+        chat: [...baseMessages, { ...keeperMessage, content: t("keeperSilentFallback") }],
+        lastOpenedAt: new Date().toISOString(),
+      });
+    } finally {
+      setIsStreaming(false);
+    }
+  };
 
   const sendMessage = async () => {
     if (!session || !scenario || !investigator || !input.trim()) return;
