@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -8,13 +8,29 @@ import { TextArea } from "@/components/ui/TextArea";
 import { useAppData } from "@/lib/app-data-context";
 import { callKeeper, readLLMStream } from "@/lib/llm";
 import { AppShell } from "@/components/layout/AppShell";
-import { ChatMessage } from "@/types";
+import { ChatMessage, Session } from "@/types";
 import { createId } from "@/lib/app-data-context";
 import { useTranslation } from "@/lib/i18n";
 import { parseKeeperReply } from "@/lib/keeperParser";
 
 const sanitizeKeeperContent = (text: string) =>
   text.replace(/openrouter\s*proc\w*[^\n]*\n?/gi, "");
+
+const buildFallbackKeeperReply = (narration: string, silentFallback: string) => {
+  const safeNarration = narration.trim() || silentFallback;
+  const baseChoices = [
+    "Survey the immediate area for threats or hidden clues.",
+    "Call out cautiously to test who might answer.",
+    "Advance toward the most striking feature nearby.",
+    "Pause to steady yourself and recall what you know.",
+  ];
+
+  const choiceLines = [...baseChoices, "Propose your own action. Describe what you do in your own words."]
+    .map((choice, idx) => `${idx + 1}. ${choice}`)
+    .join("\n");
+
+  return `NARRATION:\n${safeNarration}\n\nCHOICES:\n${choiceLines}`;
+};
 
 export default function PlayPage() {
   const params = useParams<{ sessionId: string }>();
@@ -50,68 +66,87 @@ export default function PlayPage() {
 
     keeperIntroStartedRef.current = true;
     void startKeeperIntro();
-  }, [investigator, isStreaming, scenario, session]);
+  }, [investigator, isStreaming, scenario, session, startKeeperIntro]);
 
-  const startKeeperIntro = async () => {
-    if (!session || !scenario || !investigator) return;
-    const now = new Date().toISOString();
-    const baseMessages = [...session.chat];
+  const streamKeeperTurn = useCallback(
+    async ({
+      userMessage,
+      baseMessages,
+      sessionForContext,
+      fallbackNarration,
+    }: {
+      userMessage: string;
+      baseMessages: ChatMessage[];
+      sessionForContext: Session;
+      fallbackNarration: string;
+    }) => {
+      if (!session || !scenario || !investigator) return;
+      const keeperMessage: ChatMessage = {
+        id: createId(),
+        sessionId: session.id,
+        role: "keeper",
+        content: "",
+        createdAt: new Date().toISOString(),
+      };
 
-    const updatedSession = {
-      ...session,
-      chat: baseMessages,
-      updatedAt: now,
-    };
+      setIsStreaming(true);
+      let fullTextRaw = "";
 
-    const keeperMessage: ChatMessage = {
-      id: createId(),
-      sessionId: session.id,
-      role: "keeper",
-      content: "",
-      createdAt: new Date().toISOString(),
-    };
-
-    const introPrompt = t("keeperIntroPrompt", {
-      investigator: investigator.name,
-      scenario: scenario.name,
-    });
-
-    setIsStreaming(true);
-    let fullTextRaw = "";
-
-    try {
-      if (data.settings.llm.apiKey) {
-        const stream = await callKeeper({
-          session: updatedSession,
-          scenario,
-          investigator,
-          newUserMessage: introPrompt,
-          llmConfig: data.settings.llm,
-          keeperSystemPrompt: data.settings.keeperSystemPrompt,
-          messages: baseMessages,
-        });
-        await readLLMStream(stream, (token) => {
-          fullTextRaw += token;
-          const fullText = sanitizeKeeperContent(fullTextRaw);
-          upsertSession({
-            ...updatedSession,
-            chat: [...baseMessages, { ...keeperMessage, content: fullText }],
+      try {
+        if (data.settings.llm.apiKey) {
+          const stream = await callKeeper({
+            session: sessionForContext,
+            scenario,
+            investigator,
+            newUserMessage: userMessage,
+            llmConfig: data.settings.llm,
+            keeperSystemPrompt: data.settings.keeperSystemPrompt,
+            messages: baseMessages,
           });
-        });
-        const fullText = sanitizeKeeperContent(fullTextRaw);
-        const parsedKeeperTurn = parseKeeperReply(fullText);
+          await readLLMStream(stream, (token) => {
+            fullTextRaw += token;
+            const fullText = sanitizeKeeperContent(fullTextRaw);
+            upsertSession({
+              ...sessionForContext,
+              chat: [...baseMessages, { ...keeperMessage, content: fullText }],
+            });
+          });
+          const fullText = sanitizeKeeperContent(fullTextRaw);
+          const parsedKeeperTurn = parseKeeperReply(fullText);
+          upsertSession({
+            ...sessionForContext,
+            chat: [
+              ...baseMessages,
+              { ...keeperMessage, content: fullText, meta: { parsedKeeperTurn } },
+            ],
+            lastOpenedAt: new Date().toISOString(),
+          });
+        } else {
+          const fallbackContent = buildFallbackKeeperReply(
+            fallbackNarration,
+            t("keeperSilentFallback"),
+          );
+          upsertSession({
+            ...sessionForContext,
+            chat: [
+              ...baseMessages,
+              {
+                ...keeperMessage,
+                content: fallbackContent,
+                meta: { parsedKeeperTurn: parseKeeperReply(fallbackContent) },
+              },
+            ],
+            lastOpenedAt: new Date().toISOString(),
+          });
+        }
+      } catch (error) {
+        console.error("Keeper turn failed", error);
+        const fallbackContent = buildFallbackKeeperReply(
+          sanitizeKeeperContent(fullTextRaw),
+          t("keeperSilentFallback"),
+        );
         upsertSession({
-          ...updatedSession,
-          chat: [
-            ...baseMessages,
-            { ...keeperMessage, content: fullText, meta: { parsedKeeperTurn } },
-          ],
-          lastOpenedAt: new Date().toISOString(),
-        });
-      } else {
-        const fallbackContent = t("keeperIntroFallback");
-        upsertSession({
-          ...updatedSession,
+          ...sessionForContext,
           chat: [
             ...baseMessages,
             {
@@ -122,29 +157,49 @@ export default function PlayPage() {
           ],
           lastOpenedAt: new Date().toISOString(),
         });
+      } finally {
+        setIsStreaming(false);
       }
-    } catch (error) {
-      console.error("Keeper intro failed", error);
-      const fallbackContent = sanitizeKeeperContent(fullTextRaw).trim() || t("keeperSilentFallback");
-      upsertSession({
-        ...updatedSession,
-        chat: [
-          ...baseMessages,
-          {
-            ...keeperMessage,
-            content: fallbackContent,
-            meta: { parsedKeeperTurn: parseKeeperReply(fallbackContent) },
-          },
-        ],
-        lastOpenedAt: new Date().toISOString(),
-      });
-    } finally {
-      setIsStreaming(false);
-    }
-  };
+    },
+    [
+      data.settings.keeperSystemPrompt,
+      data.settings.llm,
+      investigator,
+      scenario,
+      session,
+      t,
+      upsertSession,
+    ],
+  );
 
-  const sendMessage = async () => {
-    if (!session || !scenario || !investigator || !input.trim()) return;
+  const startKeeperIntro = useCallback(async () => {
+    if (!session || !scenario || !investigator) return;
+    const now = new Date().toISOString();
+    const baseMessages = [...session.chat];
+
+    const updatedSession = {
+      ...session,
+      chat: baseMessages,
+      updatedAt: now,
+    };
+
+    const introPrompt = t("keeperIntroPrompt", {
+      investigator: investigator.name,
+      scenario: scenario.name,
+    });
+
+    await streamKeeperTurn({
+      userMessage: introPrompt,
+      baseMessages,
+      sessionForContext: updatedSession,
+      fallbackNarration: t("keeperIntroFallback"),
+    });
+  }, [investigator, scenario, session, streamKeeperTurn, t]);
+
+  const sendMessage = async (overrideInput?: string) => {
+    if (!session || !scenario || !investigator || isStreaming) return;
+    const trimmedInput = (overrideInput ?? input).trim();
+    if (!trimmedInput) return;
     const now = new Date().toISOString();
     const baseMessages = [...session.chat];
     if (editMessageId) {
@@ -161,7 +216,7 @@ export default function PlayPage() {
       id: createId(),
       sessionId: session.id,
       role: "player",
-      content: input,
+      content: trimmedInput,
       createdAt: now,
       editedFromMessageId: editMessageId || undefined,
     };
@@ -175,78 +230,12 @@ export default function PlayPage() {
     setInput("");
     setEditMessageId(null);
 
-    setIsStreaming(true);
-    let fullTextRaw = "";
-    const keeperMessage: ChatMessage = {
-      id: createId(),
-      sessionId: session.id,
-      role: "keeper",
-      content: "",
-      createdAt: new Date().toISOString(),
-    };
-
-    try {
-      if (data.settings.llm.apiKey) {
-        const stream = await callKeeper({
-          session: updatedSession,
-          scenario,
-          investigator,
-          newUserMessage: input,
-          llmConfig: data.settings.llm,
-          keeperSystemPrompt: data.settings.keeperSystemPrompt,
-          messages: baseMessages,
-        });
-        await readLLMStream(stream, (token) => {
-          fullTextRaw += token;
-          const fullText = sanitizeKeeperContent(fullTextRaw);
-          upsertSession({
-            ...updatedSession,
-            chat: [...updatedSession.chat, { ...keeperMessage, content: fullText }],
-          });
-        });
-        const fullText = sanitizeKeeperContent(fullTextRaw);
-        const parsedKeeperTurn = parseKeeperReply(fullText);
-        upsertSession({
-          ...updatedSession,
-          chat: [
-            ...updatedSession.chat,
-            { ...keeperMessage, content: fullText, meta: { parsedKeeperTurn } },
-          ],
-          lastOpenedAt: new Date().toISOString(),
-        });
-      } else {
-        const fallbackContent = t("keeperMessageFallback");
-        upsertSession({
-          ...updatedSession,
-          chat: [
-            ...updatedSession.chat,
-            {
-              ...keeperMessage,
-              content: fallbackContent,
-              meta: { parsedKeeperTurn: parseKeeperReply(fallbackContent) },
-            },
-          ],
-          lastOpenedAt: new Date().toISOString(),
-        });
-      }
-    } catch (error) {
-      console.error("LLM chat failed", error);
-      const fallbackContent = sanitizeKeeperContent(fullTextRaw).trim() || t("keeperSilentFallback");
-      upsertSession({
-        ...updatedSession,
-        chat: [
-          ...updatedSession.chat,
-          {
-            ...keeperMessage,
-            content: fallbackContent,
-            meta: { parsedKeeperTurn: parseKeeperReply(fallbackContent) },
-          },
-        ],
-        lastOpenedAt: new Date().toISOString(),
-      });
-    } finally {
-      setIsStreaming(false);
-    }
+    await streamKeeperTurn({
+      userMessage: trimmedInput,
+      baseMessages: updatedSession.chat,
+      sessionForContext: updatedSession,
+      fallbackNarration: t("keeperMessageFallback"),
+    });
   };
 
   const editLastMessage = () => {
@@ -265,7 +254,7 @@ export default function PlayPage() {
   const goHome = () => router.push("/");
 
   const handleChoiceClick = (index: number, text: string) => {
-    setInput(`I choose option ${index}: ${text}`);
+    void sendMessage(`I choose option ${index}: ${text}`);
   };
 
   if (!session || !scenario || !investigator) {

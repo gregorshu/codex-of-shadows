@@ -112,6 +112,59 @@ function mapChatRoleToLLMRole(role: ChatMessage["role"]): LLMMessage["role"] {
   return "system";
 }
 
+function formatLogEntries(log: Session["log"]): string {
+  if (!log.length) return "No notable log entries yet.";
+
+  const latest = [...log]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 5)
+    .map((entry) => `- ${entry.title}: ${entry.details || "(details pending)"}`);
+
+  return `Recent session log entries (newest first):\n${latest.join("\n")}`;
+}
+
+function formatChatHistory(messages: ChatMessage[]): string {
+  if (!messages.length) return "Chat is starting. Keeper must open.";
+
+  return messages
+    .map((message) => {
+      const label = message.role === "keeper" ? "Keeper" : message.role === "player" ? "Player" : "System";
+      return `${label}: ${message.content}`;
+    })
+    .join("\n---\n");
+}
+
+function buildSessionContext({
+  session,
+  scenario,
+  investigator,
+  messages,
+}: {
+  session: Session;
+  scenario: Scenario;
+  investigator: Investigator;
+  messages: ChatMessage[];
+}): string {
+  const languageInstruction = LANGUAGE_ENGLISH_NAMES[session.language]
+    ? `Respond in ${LANGUAGE_ENGLISH_NAMES[session.language]}.`
+    : "Respond in the player's language.";
+
+  const summaryLines = [
+    `Scenario: ${scenario.name}`,
+    `Premise: ${scenario.premise}`,
+    `Investigator: ${investigator.name} (${investigator.occupation})`,
+    `Background: ${investigator.background}`,
+    `Traits: ${investigator.personalityTraits.join(", ")}`,
+    `Skills: ${investigator.skillsSummary}`,
+    session.stateSummary ? `Session summary: ${session.stateSummary}` : "Session summary: Investigation begins.",
+    languageInstruction,
+    formatLogEntries(session.log),
+    `Full chat transcript so far:\n${formatChatHistory(messages)}`,
+  ];
+
+  return summaryLines.join("\n");
+}
+
 export function buildKeeperMessages({
   session,
   scenario,
@@ -130,29 +183,28 @@ export function buildKeeperMessages({
   historyLimit?: number;
 }): LLMMessage[] {
   const systemPrompt = `${(keeperSystemPrompt || DEFAULT_KEEPER_SYSTEM_PROMPT).trim()}\n${KEEPER_CYCLE_INSTRUCTIONS}`.trim();
-  const languageInstruction = LANGUAGE_ENGLISH_NAMES[session.language]
-    ? `Respond in ${LANGUAGE_ENGLISH_NAMES[session.language]}.`
-    : "Respond in the player's language.";
+  const chatHistory = messages || session.chat;
 
-  const contextParts = [
-    `Scenario premise: ${scenario.premise}`,
-    `Investigator: ${investigator.name} (${investigator.occupation})`,
-    `Background: ${investigator.background}`,
-    `Traits: ${investigator.personalityTraits.join(", ")}`,
-    `Skills: ${investigator.skillsSummary}`,
-    session.stateSummary ? `Session summary: ${session.stateSummary}` : null,
-    languageInstruction,
-  ].filter(Boolean);
-
-  const historyMessages = (messages || session.chat)
+  const historyMessages = chatHistory
     .slice(-historyLimit)
     .map<LLMMessage>((m) => ({ role: mapChatRoleToLLMRole(m.role), content: m.content }));
 
+  const sessionContext = buildSessionContext({
+    session,
+    scenario,
+    investigator,
+    messages: chatHistory,
+  });
+
+  const lastMessage = chatHistory[chatHistory.length - 1];
+  const shouldAppendUserMessage =
+    !(lastMessage && lastMessage.role === "player" && lastMessage.content.trim() === newUserMessage.trim());
+
   return [
     { role: "system", content: systemPrompt },
-    { role: "system", content: contextParts.join("\n") },
+    { role: "system", content: sessionContext },
     ...historyMessages,
-    { role: "user", content: newUserMessage },
+    ...(shouldAppendUserMessage ? [{ role: "user", content: newUserMessage }] : []),
   ];
 }
 
