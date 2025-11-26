@@ -7,9 +7,11 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useAppData } from "@/lib/app-data-context";
 import { KeeperLanguage } from "@/types";
+import { LANGUAGE_NATIVE_NAMES, useTranslation } from "@/lib/i18n";
 
 export default function SettingsPage() {
   const { data, updateData } = useAppData();
+  const { t } = useTranslation();
 
   const [language, setLanguage] = useState<KeeperLanguage>(data.settings.language);
   const [theme, setTheme] = useState<"light" | "dark" | "system">(data.settings.theme);
@@ -57,42 +59,41 @@ export default function SettingsPage() {
     <AppShell>
       <div className="max-w-3xl space-y-6">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold text-gray-100">Settings</h1>
-          <p className="text-subtle text-sm">
-            Configure the Keeper language, theme, and LLM connection used across the app.
-          </p>
+          <h1 className="text-2xl font-semibold text-gray-100">{t("settingsTitle")}</h1>
+          <p className="text-subtle text-sm">{t("settingsSubtitle")}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <Card className="space-y-4 p-6">
             <div className="space-y-1">
-              <h2 className="text-lg font-semibold text-gray-100">General</h2>
-              <p className="text-subtle text-sm">
-                Choose defaults for generated content and UI presentation.
-              </p>
+              <h2 className="text-lg font-semibold text-gray-100">{t("settingsGeneralHeading")}</h2>
+              <p className="text-subtle text-sm">{t("settingsGeneralDescription")}</p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="flex flex-col gap-2 text-sm text-gray-200">
-                <span className="text-subtle">Keeper language</span>
+                <span className="text-subtle">{t("settingsLanguageLabel")}</span>
                 <select
                   value={language}
                   onChange={(event) => setLanguage(event.target.value as KeeperLanguage)}
                   className="rounded-lg border border-outline bg-[var(--bg)] px-3 py-2 text-sm text-[color:var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-slate-400/50"
                 >
-                  <option value="en">English</option>
-                  <option value="ru">Russian</option>
+                  {Object.entries(LANGUAGE_NATIVE_NAMES).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
                 </select>
               </label>
               <label className="flex flex-col gap-2 text-sm text-gray-200">
-                <span className="text-subtle">Theme</span>
+                <span className="text-subtle">{t("settingsThemeLabel")}</span>
                 <select
                   value={theme}
                   onChange={(event) => setTheme(event.target.value as "light" | "dark" | "system")}
                   className="rounded-lg border border-outline bg-[var(--bg)] px-3 py-2 text-sm text-[color:var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-slate-400/50"
                 >
-                  <option value="dark">Dark</option>
-                  <option value="light">Light</option>
-                  <option value="system">System</option>
+                  <option value="dark">{t("themeOptionDark")}</option>
+                  <option value="light">{t("themeOptionLight")}</option>
+                  <option value="system">{t("themeOptionSystem")}</option>
                 </select>
               </label>
             </div>
@@ -100,26 +101,24 @@ export default function SettingsPage() {
 
           <Card className="space-y-4 p-6">
             <div className="space-y-1">
-              <h2 className="text-lg font-semibold text-gray-100">LLM connection</h2>
-              <p className="text-subtle text-sm">
-                Provide an OpenAI-compatible endpoint to power the Keeper and scenario builders.
-              </p>
+              <h2 className="text-lg font-semibold text-gray-100">{t("settingsLLMHeading")}</h2>
+              <p className="text-subtle text-sm">{t("settingsLLMDescription")}</p>
             </div>
             <div className="grid gap-4">
               <Input
-                label="Model"
+                label={t("settingsModelLabel")}
                 value={model}
                 onChange={(event) => setModel(event.target.value)}
                 placeholder="gpt-4o-mini"
               />
               <Input
-                label="Base URL"
+                label={t("settingsBaseUrlLabel")}
                 value={baseUrl}
                 onChange={(event) => setBaseUrl(event.target.value)}
                 placeholder="https://api.openai.com/v1"
               />
               <Input
-                label="API key"
+                label={t("settingsApiKeyLabel")}
                 type="password"
                 value={apiKey}
                 onChange={(event) => setApiKey(event.target.value)}
@@ -128,7 +127,7 @@ export default function SettingsPage() {
               />
               <div className="grid gap-4 sm:grid-cols-2">
                 <Input
-                  label="Temperature"
+                  label={t("settingsTemperatureLabel")}
                   type="number"
                   step="0.1"
                   min="0"
@@ -137,7 +136,7 @@ export default function SettingsPage() {
                   onChange={(event) => setTemperature(event.target.value)}
                 />
                 <Input
-                  label="Top P"
+                  label={t("settingsTopPLabel")}
                   type="number"
                   step="0.05"
                   min="0"
@@ -146,17 +145,13 @@ export default function SettingsPage() {
                   onChange={(event) => setTopP(event.target.value)}
                 />
               </div>
-              <p className="text-subtle text-xs">
-                Settings are stored locally in your browser and used for all future sessions.
-              </p>
+              <p className="text-subtle text-xs">{t("settingsStorageNote")}</p>
             </div>
           </Card>
 
           <div className="flex items-center gap-3">
-            <Button type="submit">Save settings</Button>
-            {status === "saved" && (
-              <span className="text-sm text-green-400">Saved</span>
-            )}
+            <Button type="submit">{t("settingsSaveButton")}</Button>
+            {status === "saved" && <span className="text-sm text-green-400">{t("settingsSavedStatus")}</span>}
           </div>
         </form>
       </div>

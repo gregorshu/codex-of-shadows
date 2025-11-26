@@ -5,9 +5,11 @@ import { usePathname } from "next/navigation";
 import { GearIcon, HomeIcon } from "@radix-ui/react-icons";
 import React from "react";
 import { clsx } from "clsx";
+import { useTranslation } from "@/lib/i18n";
 
 export const AppShell = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
+  const { t } = useTranslation();
   const showHome = pathname !== "/";
   const isOnSettingsPage = pathname === "/settings";
   return (
@@ -23,8 +25,8 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
             </Link>
           )}
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-subtle">Call of Cthulhu Keeper</p>
-            <h1 className="text-xl font-semibold text-gray-100">AI Keeper Companion</h1>
+            <p className="text-xs uppercase tracking-[0.2em] text-subtle">{t("appTagline")}</p>
+            <h1 className="text-xl font-semibold text-gray-100">{t("appTitle")}</h1>
           </div>
         </div>
         <Link
@@ -34,7 +36,7 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
             "hover:bg-[var(--surface-strong)]",
             isOnSettingsPage && "bg-[var(--surface-strong)]"
           )}
-          aria-label="Settings"
+          aria-label={t("settingsAriaLabel")}
           aria-current={isOnSettingsPage ? "page" : undefined}
         >
           <GearIcon />

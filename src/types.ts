@@ -1,4 +1,4 @@
-export type KeeperLanguage = "en" | "ru";
+export type KeeperLanguage = "en" | "ru" | "fr" | "es";
 
 export type ScenarioSource = "predefined" | "custom";
 

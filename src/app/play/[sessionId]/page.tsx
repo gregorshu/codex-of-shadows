@@ -11,11 +11,13 @@ import { callLLM } from "@/lib/llm";
 import { AppShell } from "@/components/layout/AppShell";
 import { ChatMessage } from "@/types";
 import { createId } from "@/lib/app-data-context";
+import { useTranslation } from "@/lib/i18n";
 
 export default function PlayPage() {
   const params = useParams<{ sessionId: string }>();
   const router = useRouter();
   const { data, upsertSession } = useAppData();
+  const { t } = useTranslation();
   const session = data.sessions.find((s) => s.id === params.sessionId);
   const scenario = data.scenarios.find((s) => s.id === session?.scenarioId);
   const investigator = data.investigators.find((i) => i.id === session?.investigatorId);
@@ -23,6 +25,11 @@ export default function PlayPage() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [editMessageId, setEditMessageId] = useState<string | null>(null);
   const messageEndRef = useRef<HTMLDivElement | null>(null);
+  const roleLabels: Record<ChatMessage["role"], string> = {
+    player: t("rolePlayer"),
+    keeper: t("roleKeeper"),
+    system: t("roleSystem"),
+  };
 
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -88,15 +95,16 @@ export default function PlayPage() {
           });
         }
       } else {
-        const fallback =
-          "The rain drums harder on the windowpanes. Somewhere in the house, a floorboard creaks in reply. What do you do?";
-        upsertSession({ ...updatedSession, chat: [...updatedSession.chat, { ...keeperMessage, content: fallback }] });
+        upsertSession({
+          ...updatedSession,
+          chat: [...updatedSession.chat, { ...keeperMessage, content: t("keeperMessageFallback") }],
+        });
       }
     } catch (error) {
       console.error("LLM chat failed", error);
       upsertSession({
         ...updatedSession,
-        chat: [...updatedSession.chat, { ...keeperMessage, content: "The Keeper is silent for a moment." }],
+        chat: [...updatedSession.chat, { ...keeperMessage, content: t("keeperSilentFallback") }],
       });
     } finally {
       setIsStreaming(false);
@@ -122,9 +130,9 @@ export default function PlayPage() {
     return (
       <AppShell>
         <Card className="p-6">
-          <p className="text-subtle">Session not found.</p>
+          <p className="text-subtle">{t("sessionNotFound")}</p>
           <Button onClick={goHome} className="mt-4">
-            Return home
+            {t("returnHome")}
           </Button>
         </Card>
       </AppShell>
@@ -138,7 +146,7 @@ export default function PlayPage() {
           <div className="flex-1 space-y-3 overflow-y-auto pr-2">
             {session.chat.map((message) => (
               <div key={message.id} className="flex flex-col gap-1">
-                <div className="text-xs uppercase tracking-[0.2em] text-subtle">{message.role}</div>
+                <div className="text-xs uppercase tracking-[0.2em] text-subtle">{roleLabels[message.role]}</div>
                 <div className="rounded-xl bg-[#1d2026] px-4 py-3 text-sm leading-relaxed text-gray-100">
                   {message.content}
                 </div>
@@ -150,31 +158,31 @@ export default function PlayPage() {
             <TextArea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Describe your next move..."
+              placeholder={t("describeNextMove")}
             />
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <Button variant="ghost" onClick={editLastMessage}>
-                  Edit last
+                  {t("editLast")}
                 </Button>
                 <Button variant="ghost" disabled={!isStreaming} onClick={cancelStreaming}>
-                  Cancel
+                  {t("cancelLabel")}
                 </Button>
               </div>
               <Button onClick={sendMessage} disabled={isStreaming || !input.trim()}>
-                Send
+                {t("sendLabel")}
               </Button>
             </div>
           </div>
         </Card>
 
         <Card className="p-6">
-          <p className="text-xs uppercase tracking-[0.2em] text-subtle">Investigator</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-subtle">{t("investigatorHeader")}</p>
           <h3 className="text-lg font-semibold text-gray-100">{investigator.name}</h3>
           <p className="text-subtle">{investigator.occupation}</p>
           <p className="mt-2 text-sm text-gray-200">{investigator.background}</p>
           <div className="mt-4 space-y-2">
-            <p className="text-subtle text-sm">Traits</p>
+            <p className="text-subtle text-sm">{t("personalityTraitsLabel")}</p>
             <div className="flex flex-wrap gap-2">
               {investigator.personalityTraits.map((trait) => (
                 <span key={trait} className="rounded-full bg-[#1f2937] px-3 py-1 text-xs text-gray-200">
@@ -184,11 +192,11 @@ export default function PlayPage() {
             </div>
           </div>
           <div className="mt-4 space-y-2">
-            <p className="text-subtle text-sm">Skills</p>
+            <p className="text-subtle text-sm">{t("skillsSummaryLabel")}</p>
             <p className="text-sm text-gray-200">{investigator.skillsSummary}</p>
           </div>
           <div className="mt-6 space-y-2 text-sm text-gray-200">
-            <p className="text-subtle">Session state</p>
+            <p className="text-subtle">{t("sessionStateLabel")}</p>
             <p>{session.stateSummary}</p>
           </div>
         </Card>

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { useAppData, createId } from "@/lib/app-data-context";
 import { AppShell } from "@/components/layout/AppShell";
 import { Session } from "@/types";
+import { useTranslation } from "@/lib/i18n";
 
 export default function SetupPage() {
   const searchParams = useSearchParams();
@@ -14,6 +15,7 @@ export default function SetupPage() {
   const investigatorId = searchParams.get("investigatorId");
   const router = useRouter();
   const { data, upsertSession } = useAppData();
+  const { t } = useTranslation();
 
   const scenario = data.scenarios.find((s) => s.id === scenarioId) || data.scenarios[0];
   const investigator = data.investigators.find((i) => i.id === investigatorId) || data.investigators[0];
@@ -33,14 +35,14 @@ export default function SetupPage() {
       createdAt: now,
       updatedAt: now,
       lastOpenedAt: now,
-      stateSummary: "Investigation begins.",
+      stateSummary: t("sessionStateDefault"),
       chat: [],
       log: [
         {
           id: createId(),
           sessionId: "",
           type: "session_start",
-          title: "Session started",
+          title: t("sessionStartLogTitle"),
           createdAt: now,
         },
       ],
@@ -55,26 +57,26 @@ export default function SetupPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-100">Scenario</h2>
+            <h2 className="text-lg font-semibold text-gray-100">{t("scenarioHeader")}</h2>
             <Button variant="ghost" onClick={() => router.push(`/scenario?scenarioId=${scenario?.id}`)}>
-              Edit Scenario
+              {t("editScenario")}
             </Button>
           </div>
           <p className="text-subtle text-sm">{scenario?.shortDescription}</p>
           <div className="mt-4 space-y-2 text-sm text-gray-200">
-            <p className="text-subtle">Premise</p>
+            <p className="text-subtle">{t("premiseLabel")}</p>
             <p className="leading-relaxed">{scenario?.premise}</p>
           </div>
         </Card>
 
         <Card className="p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-100">Investigator</h2>
+            <h2 className="text-lg font-semibold text-gray-100">{t("investigatorHeader")}</h2>
             <Button
               variant="ghost"
               onClick={() => router.push(`/investigator?scenarioId=${scenario?.id}&investigatorId=${investigator?.id}`)}
             >
-              Edit Investigator
+              {t("editInvestigator")}
             </Button>
           </div>
           <div className="space-y-2 text-sm text-gray-200">
@@ -82,7 +84,7 @@ export default function SetupPage() {
             <p className="text-subtle">{investigator?.occupation}</p>
             <p className="leading-relaxed">{investigator?.background}</p>
             <div>
-              <p className="text-subtle">Traits</p>
+              <p className="text-subtle">{t("personalityTraitsLabel")}</p>
               <div className="flex flex-wrap gap-2">
                 {investigator?.personalityTraits.map((trait) => (
                   <span key={trait} className="rounded-full bg-[#1f2937] px-3 py-1 text-xs text-gray-200">
@@ -92,7 +94,7 @@ export default function SetupPage() {
               </div>
             </div>
             <div>
-              <p className="text-subtle">Skills</p>
+              <p className="text-subtle">{t("skillsSummaryLabel")}</p>
               <p>{investigator?.skillsSummary}</p>
             </div>
           </div>
@@ -101,7 +103,7 @@ export default function SetupPage() {
 
       <div className="mt-6 flex justify-end">
         <Button disabled={!ready} onClick={startSession}>
-          Start scenario
+          {t("startScenarioButton")}
         </Button>
       </div>
     </AppShell>
