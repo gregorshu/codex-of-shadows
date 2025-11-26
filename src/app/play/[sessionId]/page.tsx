@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { TextArea } from "@/components/ui/TextArea";
 import { useAppData } from "@/lib/app-data-context";
-import { callKeeper } from "@/lib/llm";
+import { callKeeper, readLLMStream } from "@/lib/llm";
 import { AppShell } from "@/components/layout/AppShell";
 import { ChatMessage } from "@/types";
 import { createId } from "@/lib/app-data-context";
@@ -86,18 +86,14 @@ export default function PlayPage() {
           keeperSystemPrompt: data.settings.keeperSystemPrompt,
           messages: baseMessages,
         });
-        const reader = stream.getReader();
-        const decoder = new TextDecoder();
         let fullText = "";
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          fullText += decoder.decode(value, { stream: true });
+        await readLLMStream(stream, (token) => {
+          fullText += token;
           upsertSession({
             ...updatedSession,
             chat: [...updatedSession.chat, { ...keeperMessage, content: fullText }],
           });
-        }
+        });
         upsertSession({
           ...updatedSession,
           chat: [...updatedSession.chat, { ...keeperMessage, content: fullText }],

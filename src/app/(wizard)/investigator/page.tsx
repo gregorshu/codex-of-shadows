@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/Input";
 import { TextArea } from "@/components/ui/TextArea";
 import { useAppData, createId } from "@/lib/app-data-context";
 import { Investigator } from "@/types";
-import { callLLM } from "@/lib/llm";
+import { callLLM, readLLMStream } from "@/lib/llm";
 import { AppShell } from "@/components/layout/AppShell";
 import {
   LANGUAGE_ENGLISH_NAMES,
@@ -59,14 +59,7 @@ export default function InvestigatorWizardPage() {
             { role: "user", content: prompt },
           ],
         });
-        const reader = stream.getReader();
-        const decoder = new TextDecoder();
-        let fullText = "";
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          fullText += decoder.decode(value, { stream: true });
-        }
+        const fullText = await readLLMStream(stream);
         const parts = fullText.split("\n").filter(Boolean);
         const generatedTraits = parts
           .slice(4, 7)

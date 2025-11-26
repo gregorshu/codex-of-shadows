@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useAppData, createId } from "@/lib/app-data-context";
 import { Scenario } from "@/types";
-import { callLLM } from "@/lib/llm";
+import { callLLM, readLLMStream } from "@/lib/llm";
 import { AppShell } from "@/components/layout/AppShell";
 import { LANGUAGE_ENGLISH_NAMES, useTranslation } from "@/lib/i18n";
 
@@ -65,14 +65,7 @@ export default function ScenarioWizardPage() {
             { role: "user", content: prompt },
           ],
         });
-        const reader = stream.getReader();
-        const decoder = new TextDecoder();
-        let fullText = "";
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          fullText += decoder.decode(value, { stream: true });
-        }
+        const fullText = await readLLMStream(stream);
         generatedPremise = fullText || generatedPremise;
       }
     } catch (error) {
