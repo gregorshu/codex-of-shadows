@@ -59,15 +59,6 @@ export default function PlayPage() {
     keeperIntroStartedRef.current = false;
   }, [session?.id]);
 
-  useEffect(() => {
-    if (!session || !scenario || !investigator) return;
-    if (session.chat.length > 0) return;
-    if (isStreaming || keeperIntroStartedRef.current) return;
-
-    keeperIntroStartedRef.current = true;
-    void startKeeperIntro();
-  }, [investigator, isStreaming, scenario, session, startKeeperIntro]);
-
   const streamKeeperTurn = useCallback(
     async ({
       userMessage,
@@ -199,6 +190,15 @@ export default function PlayPage() {
       fallbackNarration: t("keeperIntroFallback"),
     });
   }, [investigator, scenario, session, streamKeeperTurn, t]);
+
+  useEffect(() => {
+    if (!session || !scenario || !investigator) return;
+    if (session.chat.length > 0) return;
+    if (isStreaming || keeperIntroStartedRef.current) return;
+
+    keeperIntroStartedRef.current = true;
+    void startKeeperIntro();
+  }, [investigator, isStreaming, scenario, session, startKeeperIntro]);
 
   const sendMessage = async (overrideInput?: string) => {
     if (!session || !scenario || !investigator || isStreaming) return;
