@@ -6,8 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { TextArea } from "@/components/ui/TextArea";
 import { useAppData } from "@/lib/app-data-context";
-import { buildKeeperPrompt } from "@/lib/prompt";
-import { callLLM } from "@/lib/llm";
+import { callKeeper } from "@/lib/llm";
 import { AppShell } from "@/components/layout/AppShell";
 import { ChatMessage } from "@/types";
 import { createId } from "@/lib/app-data-context";
@@ -38,6 +37,17 @@ export default function PlayPage() {
   const sendMessage = async () => {
     if (!session || !scenario || !investigator || !input.trim()) return;
     const now = new Date().toISOString();
+    const baseMessages = [...session.chat];
+    if (editMessageId) {
+      baseMessages.push({
+        id: createId(),
+        sessionId: session.id,
+        role: "system",
+        content: t("playerRewroteAction"),
+        createdAt: now,
+        meta: { isSystemNote: true },
+      });
+    }
     const newPlayerMessage: ChatMessage = {
       id: createId(),
       sessionId: session.id,
@@ -49,7 +59,7 @@ export default function PlayPage() {
 
     const updatedSession = {
       ...session,
-      chat: [...session.chat, newPlayerMessage],
+      chat: [...baseMessages, newPlayerMessage],
       updatedAt: now,
     };
     upsertSession(updatedSession);
@@ -67,22 +77,14 @@ export default function PlayPage() {
 
     try {
       if (data.settings.llm.apiKey) {
-        const { basePrompt, contextPrompt } = buildKeeperPrompt({
+        const stream = await callKeeper({
+          session: updatedSession,
           scenario,
           investigator,
-          session: updatedSession,
-          messages: updatedSession.chat,
+          newUserMessage: input,
+          llmConfig: data.settings.llm,
           keeperSystemPrompt: data.settings.keeperSystemPrompt,
-        });
-        const stream = await callLLM({
-          baseUrl: data.settings.llm.baseUrl,
-          apiKey: data.settings.llm.apiKey,
-          model: data.settings.llm.model,
-          messages: [
-            { role: "system", content: basePrompt },
-            { role: "system", content: contextPrompt },
-            { role: "user", content: input },
-          ],
+          messages: baseMessages,
         });
         const reader = stream.getReader();
         const decoder = new TextDecoder();
@@ -96,10 +98,16 @@ export default function PlayPage() {
             chat: [...updatedSession.chat, { ...keeperMessage, content: fullText }],
           });
         }
+        upsertSession({
+          ...updatedSession,
+          chat: [...updatedSession.chat, { ...keeperMessage, content: fullText }],
+          lastOpenedAt: new Date().toISOString(),
+        });
       } else {
         upsertSession({
           ...updatedSession,
           chat: [...updatedSession.chat, { ...keeperMessage, content: t("keeperMessageFallback") }],
+          lastOpenedAt: new Date().toISOString(),
         });
       }
     } catch (error) {
@@ -107,6 +115,7 @@ export default function PlayPage() {
       upsertSession({
         ...updatedSession,
         chat: [...updatedSession.chat, { ...keeperMessage, content: t("keeperSilentFallback") }],
+        lastOpenedAt: new Date().toISOString(),
       });
     } finally {
       setIsStreaming(false);

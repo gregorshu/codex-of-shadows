@@ -110,6 +110,7 @@ const baseTranslations = {
     keeperSilentFallback: "The Keeper is silent for a moment.",
     keeperMessageFallback:
       "The rain drums harder on the windowpanes. Somewhere in the house, a floorboard creaks in reply. What do you do?",
+    playerRewroteAction: "Player rewrote their previous action; ignore prior choice.",
     rolePlayer: "Player",
     roleKeeper: "Keeper",
     roleSystem: "System",
@@ -240,6 +241,7 @@ export const translations: Record<KeeperLanguage, Record<TranslationKey, string>
     keeperSilentFallback: "Хранитель на мгновение умолкает.",
     keeperMessageFallback:
       "Дождь все сильнее барабанит по стеклам. Где-то в доме в ответ поскрипывает половица. Что вы делаете?",
+    playerRewroteAction: "Игрок переписал свое предыдущее действие; игнорируйте прошлый выбор.",
     rolePlayer: "Игрок",
     roleKeeper: "Хранитель",
     roleSystem: "Система",
@@ -366,6 +368,7 @@ export const translations: Record<KeeperLanguage, Record<TranslationKey, string>
     keeperSilentFallback: "Le Gardien reste silencieux un instant.",
     keeperMessageFallback:
       "La pluie martèle plus fort les vitres. Quelque part dans la maison, une planche grince en réponse. Que faites-vous ?",
+    playerRewroteAction: "Le joueur a réécrit son action précédente ; ignorez le choix précédent.",
     rolePlayer: "Joueur",
     roleKeeper: "Gardien",
     roleSystem: "Système",
@@ -491,6 +494,7 @@ export const translations: Record<KeeperLanguage, Record<TranslationKey, string>
     keeperSilentFallback: "El Guardián guarda silencio por un momento.",
     keeperMessageFallback:
       "La lluvia golpea más fuerte las ventanas. En alguna parte de la casa cruje una tabla. ¿Qué haces?",
+    playerRewroteAction: "El jugador reescribió su acción anterior; ignora la elección previa.",
     rolePlayer: "Jugador",
     roleKeeper: "Guardián",
     roleSystem: "Sistema",
