@@ -67,18 +67,20 @@ export default function PlayPage() {
 
     try {
       if (data.settings.llm.apiKey) {
-        const prompt = buildKeeperPrompt({
+        const { basePrompt, contextPrompt } = buildKeeperPrompt({
           scenario,
           investigator,
           session: updatedSession,
           messages: updatedSession.chat,
+          keeperSystemPrompt: data.settings.keeperSystemPrompt,
         });
         const stream = await callLLM({
           baseUrl: data.settings.llm.baseUrl,
           apiKey: data.settings.llm.apiKey,
           model: data.settings.llm.model,
           messages: [
-            { role: "system", content: prompt },
+            { role: "system", content: basePrompt },
+            { role: "system", content: contextPrompt },
             { role: "user", content: input },
           ],
         });
