@@ -17,7 +17,7 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
           {showHome && (
             <Link
               href="/"
-              className="rounded-full border border-outline bg-[#16181d] p-2 text-gray-200 hover:bg-[#1f2937]"
+              className="rounded-full border border-outline bg-[var(--surface)] p-2 text-[color:var(--text-primary)] hover:bg-[var(--surface-strong)]"
             >
               <HomeIcon />
             </Link>
@@ -30,9 +30,9 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
         <Link
           href="/settings"
           className={clsx(
-            "flex h-10 w-10 items-center justify-center rounded-full border border-outline bg-[#16181d] text-gray-200",
-            "hover:bg-[#1f2937]",
-            isOnSettingsPage && "bg-[#1f2937]"
+            "flex h-10 w-10 items-center justify-center rounded-full border border-outline bg-[var(--surface)] text-[color:var(--text-primary)]",
+            "hover:bg-[var(--surface-strong)]",
+            isOnSettingsPage && "bg-[var(--surface-strong)]"
           )}
           aria-label="Settings"
           aria-current={isOnSettingsPage ? "page" : undefined}

@@ -16,9 +16,11 @@ export const Button: React.FC<ButtonProps> = ({
   const styles = clsx(
     "rounded-full px-4 py-2 text-sm font-medium transition border border-outline",
     {
-      "bg-slate-100 text-gray-900 hover:bg-white": variant === "primary",
-      "bg-transparent text-gray-200 hover:bg-[#1f2937]": variant === "ghost",
-      "bg-transparent text-gray-200": variant === "outline",
+      "bg-[color:var(--button-primary-bg)] text-[color:var(--button-primary-text)] hover:bg-[color:var(--button-primary-hover)]":
+        variant === "primary",
+      "bg-transparent text-[color:var(--button-ghost-text)] hover:bg-[color:var(--button-ghost-hover)]":
+        variant === "ghost",
+      "bg-transparent text-[color:var(--text-primary)]": variant === "outline",
       "w-full": fullWidth,
       "opacity-50 cursor-not-allowed": props.disabled,
     },
