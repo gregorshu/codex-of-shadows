@@ -1,7 +1,7 @@
 import { ChatMessage, Investigator, Scenario, Session } from "@/types";
 import { DEFAULT_KEEPER_SYSTEM_PROMPT } from "@/data/defaultKeeperSystemPrompt";
 import { LANGUAGE_ENGLISH_NAMES } from "@/lib/i18n";
-import { KEEPER_CYCLE_INSTRUCTIONS } from "@/lib/keeperPrompt";
+import { buildKeeperInstructions } from "@/lib/keeperPrompt";
 
 type LLMMessage = { role: "system" | "user" | "assistant"; content: string };
 
@@ -172,6 +172,8 @@ export function buildKeeperMessages({
   newUserMessage,
   messages,
   keeperSystemPrompt,
+  keeperCycleRules,
+  keeperReplyFormat,
   historyLimit = Number.POSITIVE_INFINITY,
 }: {
   session: Session;
@@ -180,9 +182,19 @@ export function buildKeeperMessages({
   newUserMessage: string;
   messages?: ChatMessage[];
   keeperSystemPrompt?: string;
+  keeperCycleRules?: string;
+  keeperReplyFormat?: string;
   historyLimit?: number;
 }): LLMMessage[] {
-  const systemPrompt = `${(keeperSystemPrompt || DEFAULT_KEEPER_SYSTEM_PROMPT).trim()}\n${KEEPER_CYCLE_INSTRUCTIONS}`.trim();
+  const systemPrompt = [
+    (keeperSystemPrompt || DEFAULT_KEEPER_SYSTEM_PROMPT).trim(),
+    buildKeeperInstructions({
+      cycleRules: keeperCycleRules,
+      replyFormat: keeperReplyFormat,
+    }),
+  ]
+    .filter(Boolean)
+    .join("\n");
   const chatHistory = messages || session.chat;
 
   const historyMessages = chatHistory
@@ -215,6 +227,8 @@ export async function callKeeper({
   newUserMessage,
   llmConfig,
   keeperSystemPrompt,
+  keeperCycleRules,
+  keeperReplyFormat,
   messages,
 }: {
   session: Session;
@@ -223,6 +237,8 @@ export async function callKeeper({
   newUserMessage: string;
   llmConfig: { model: string; apiKey?: string; baseUrl?: string; temperature?: number; topP?: number };
   keeperSystemPrompt?: string;
+  keeperCycleRules?: string;
+  keeperReplyFormat?: string;
   messages?: ChatMessage[];
 }): Promise<ReadableStream<Uint8Array>> {
   const builtMessages = buildKeeperMessages({
@@ -231,6 +247,8 @@ export async function callKeeper({
     investigator,
     newUserMessage,
     keeperSystemPrompt,
+    keeperCycleRules,
+    keeperReplyFormat,
     messages,
   });
 

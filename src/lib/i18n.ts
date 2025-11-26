@@ -30,6 +30,8 @@ const baseTranslations = {
     settingsSubtitle: "Configure the Keeper language, theme, and LLM connection used across the app.",
     settingsTabGeneral: "General",
     settingsTabKeeperPrompt: "Keeper system prompt",
+    settingsTabCycleRules: "Investigator-Keeper Cycle",
+    settingsTabReplyFormat: "Keeper reply format",
     settingsGeneralHeading: "General",
     settingsGeneralDescription: "Choose defaults for generated content and UI presentation.",
     settingsLanguageLabel: "App language",
@@ -55,6 +57,16 @@ const baseTranslations = {
       "Edit the system prompt applied before every Keeper response. Customize it to fit your table.",
     settingsKeeperPromptLabel: "System prompt",
     settingsKeeperPromptNote: "Stored locally and sent with all Keeper LLM calls.",
+    settingsCycleHeading: "Investigator-Keeper Cycle",
+    settingsCycleDescription:
+      "Define the turn-by-turn structure the Keeper must follow when running scenes and choices.",
+    settingsCycleLabel: "Cycle rules",
+    settingsCycleNote: "Applies to every Keeper turn in addition to the system prompt.",
+    settingsReplyFormatHeading: "Keeper reply format",
+    settingsReplyFormatDescription:
+      "Set the exact formatting rules for how the Keeper presents narration and choices.",
+    settingsReplyFormatLabel: "Reply format",
+    settingsReplyFormatNote: "Keep a consistent structure so the Investigator always sees clear options.",
 
     investigatorWizardBadge: "Investigator wizard",
     investigatorWizardTitle: "Create your character",
@@ -174,6 +186,8 @@ export const translations: Record<KeeperLanguage, Record<TranslationKey, string>
     settingsSubtitle: "Выберите язык Хранителя и интерфейса, тему и подключение к LLM.",
     settingsTabGeneral: "Общее",
     settingsTabKeeperPrompt: "Системный промпт Хранителя",
+    settingsTabCycleRules: "Цикл Следователь-Хранитель",
+    settingsTabReplyFormat: "Формат ответа Хранителя",
     settingsGeneralHeading: "Общее",
     settingsGeneralDescription: "Задайте параметры для контента и отображения интерфейса.",
     settingsLanguageLabel: "Язык приложения",
@@ -199,6 +213,17 @@ export const translations: Record<KeeperLanguage, Record<TranslationKey, string>
       "Измените системный промпт, который используется перед каждым ответом Хранителя.",
     settingsKeeperPromptLabel: "Системный промпт",
     settingsKeeperPromptNote: "Хранится локально и отправляется во все запросы к LLM для Хранителя.",
+    settingsCycleHeading: "Цикл Следователь-Хранитель",
+    settingsCycleDescription:
+      "Определите пошаговую структуру, которой должен следовать Хранитель при ведении сцен и выборов.",
+    settingsCycleLabel: "Правила цикла",
+    settingsCycleNote: "Применяется к каждому ходу Хранителя вместе с системным промптом.",
+    settingsReplyFormatHeading: "Формат ответа Хранителя",
+    settingsReplyFormatDescription:
+      "Задайте точные правила форматирования, как Хранитель подает повествование и варианты выбора.",
+    settingsReplyFormatLabel: "Формат ответа",
+    settingsReplyFormatNote:
+      "Сохраняйте единый формат, чтобы Следователь всегда видел понятные варианты действий.",
 
     investigatorWizardBadge: "Мастер следователя",
     investigatorWizardTitle: "Создайте персонажа",
@@ -311,6 +336,8 @@ export const translations: Record<KeeperLanguage, Record<TranslationKey, string>
     settingsSubtitle: "Choisissez le langage du Gardien et de l'interface, le thème et la connexion LLM.",
     settingsTabGeneral: "Général",
     settingsTabKeeperPrompt: "Prompt système du Gardien",
+    settingsTabCycleRules: "Cycle Investigateur-Gardien",
+    settingsTabReplyFormat: "Format des réponses du Gardien",
     settingsGeneralHeading: "Général",
     settingsGeneralDescription: "Définissez les valeurs par défaut pour le contenu généré et l'affichage.",
     settingsLanguageLabel: "Langue de l'application",
@@ -338,6 +365,17 @@ export const translations: Record<KeeperLanguage, Record<TranslationKey, string>
       "Modifiez le prompt système envoyé avant chaque réponse du Gardien.",
     settingsKeeperPromptLabel: "Prompt système",
     settingsKeeperPromptNote: "Stocké localement et envoyé à tous les appels LLM du Gardien.",
+    settingsCycleHeading: "Cycle Investigateur-Gardien",
+    settingsCycleDescription:
+      "Définissez la structure tour par tour que le Gardien doit suivre pour les scènes et les choix.",
+    settingsCycleLabel: "Règles du cycle",
+    settingsCycleNote: "S'applique à chaque tour du Gardien en plus du prompt système.",
+    settingsReplyFormatHeading: "Format des réponses du Gardien",
+    settingsReplyFormatDescription:
+      "Précisez les règles exactes de formatage pour la narration et les choix du Gardien.",
+    settingsReplyFormatLabel: "Format de réponse",
+    settingsReplyFormatNote:
+      "Gardez une structure cohérente pour que l'Investigateur voie toujours des options claires.",
 
     investigatorWizardBadge: "Assistant personnage",
     investigatorWizardTitle: "Créez votre personnage",
@@ -450,6 +488,8 @@ export const translations: Record<KeeperLanguage, Record<TranslationKey, string>
     settingsSubtitle: "Define el idioma del Guardián y la interfaz, el tema y la conexión LLM.",
     settingsTabGeneral: "General",
     settingsTabKeeperPrompt: "Prompt del Guardián",
+    settingsTabCycleRules: "Ciclo Investigador-Guardián",
+    settingsTabReplyFormat: "Formato de respuesta del Guardián",
     settingsGeneralHeading: "General",
     settingsGeneralDescription: "Elige valores predeterminados para el contenido y la presentación del UI.",
     settingsLanguageLabel: "Idioma de la aplicación",
@@ -476,6 +516,17 @@ export const translations: Record<KeeperLanguage, Record<TranslationKey, string>
       "Edita el prompt del sistema que se envía antes de cada respuesta del Guardián.",
     settingsKeeperPromptLabel: "Prompt del sistema",
     settingsKeeperPromptNote: "Se guarda localmente y se envía en todas las futuras llamadas LLM del Guardián.",
+    settingsCycleHeading: "Ciclo Investigador-Guardián",
+    settingsCycleDescription:
+      "Define la estructura por turnos que el Guardián debe seguir para escenas y elecciones.",
+    settingsCycleLabel: "Reglas del ciclo",
+    settingsCycleNote: "Se aplica a cada turno del Guardián junto con el prompt del sistema.",
+    settingsReplyFormatHeading: "Formato de respuesta del Guardián",
+    settingsReplyFormatDescription:
+      "Establece las reglas exactas de formato para la narración y las opciones del Guardián.",
+    settingsReplyFormatLabel: "Formato de respuesta",
+    settingsReplyFormatNote:
+      "Mantén una estructura coherente para que el Investigador siempre vea opciones claras.",
 
     investigatorWizardBadge: "Asistente de investigador",
     investigatorWizardTitle: "Crea tu personaje",

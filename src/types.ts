@@ -14,6 +14,8 @@ export interface AppSettings {
   language: KeeperLanguage;
   theme: KeeperTheme;
   keeperSystemPrompt: string;
+  keeperCycleRules: string;
+  keeperReplyFormat: string;
   llm: {
     model: string;
     baseUrl?: string;
