@@ -39,19 +39,23 @@ Stay in-fiction at all times unless the player explicitly asks for meta or rules
 `;
 
 export const DEFAULT_KEEPER_REPLY_FORMAT = `
-REPLY FORMAT (USE THIS EXACTLY)
+REPLY FORMAT (STRICT JSON)
 
-NARRATION:
-<one or more paragraphs of in-fiction narration, from the Investigator's POV>
+Return a single JSON object with this exact shape and nothing else. Do not wrap it in Markdown fences.
+{
+  "narration": "<first-person narration to the investigator, 2-3 vivid paragraphs>",
+  "choices": [
+    "<first concrete option with a hint of stakes>",
+    "<second concrete option>",
+    "<third concrete option>",
+    "<fourth concrete option>",
+    "Propose your own action. Describe what you do in your own words."
+  ]
+}
 
-CHOICES:
-1. <first concrete option, with short justification or hint of stakes>
-2. <second concrete option>
-3. <third concrete option>
-4. <fourth concrete option>
-5. Propose your own action. Describe what you do in your own words.
-
-Never output anything outside the NARRATION: and CHOICES: blocks.
+- narration must be a string.
+- choices must be an array of 3-5 short strings.
+- Never include commentary before or after the JSON.
 `;
 
 export function buildKeeperInstructions({

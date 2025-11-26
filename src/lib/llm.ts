@@ -22,11 +22,15 @@ export async function callLLM({
   model,
   apiKey,
   baseUrl,
+  temperature,
+  topP,
 }: {
   messages: LLMMessage[];
   model: string;
   apiKey?: string;
   baseUrl?: string;
+  temperature?: number;
+  topP?: number;
 }): Promise<ReadableStream<Uint8Array>> {
   const url = `${resolveBaseUrl(baseUrl)}/v1/chat/completions`;
   const response = await fetch(url, {
@@ -39,6 +43,8 @@ export async function callLLM({
       model,
       stream: true,
       messages,
+      temperature,
+      top_p: topP,
     }),
   });
 
@@ -47,6 +53,50 @@ export async function callLLM({
   }
 
   return response.body;
+}
+
+export async function callLLMCompletion({
+  messages,
+  model,
+  apiKey,
+  baseUrl,
+  temperature,
+  topP,
+}: {
+  messages: LLMMessage[];
+  model: string;
+  apiKey?: string;
+  baseUrl?: string;
+  temperature?: number;
+  topP?: number;
+}): Promise<string> {
+  const url = `${resolveBaseUrl(baseUrl)}/v1/chat/completions`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: apiKey ? `Bearer ${apiKey}` : "",
+    },
+    body: JSON.stringify({
+      model,
+      stream: false,
+      messages,
+      temperature,
+      top_p: topP,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`LLM request failed: ${response.status}`);
+  }
+
+  const payload = await response.json();
+  return (
+    payload.choices?.[0]?.message?.content ||
+    payload.choices?.[0]?.delta?.content ||
+    payload.choices?.[0]?.text ||
+    ""
+  );
 }
 
 function parseLLMStreamLine(line: string): string {
@@ -240,7 +290,7 @@ export async function callKeeper({
   keeperCycleRules?: string;
   keeperReplyFormat?: string;
   messages?: ChatMessage[];
-}): Promise<ReadableStream<Uint8Array>> {
+}): Promise<string> {
   const builtMessages = buildKeeperMessages({
     session,
     scenario,
@@ -252,10 +302,12 @@ export async function callKeeper({
     messages,
   });
 
-  return callLLM({
+  return callLLMCompletion({
     baseUrl: llmConfig.baseUrl,
     apiKey: llmConfig.apiKey,
     model: llmConfig.model,
     messages: builtMessages,
+    temperature: llmConfig.temperature,
+    topP: llmConfig.topP,
   });
 }

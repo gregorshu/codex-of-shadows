@@ -68,6 +68,7 @@ export interface ChatMessage {
     isSystemNote?: boolean;
     wasCancelled?: boolean;
     parsedKeeperTurn?: KeeperTurnParsed; // only for keeper messages
+    isThinking?: boolean;
   };
 }
 

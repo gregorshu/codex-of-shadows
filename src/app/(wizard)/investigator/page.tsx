@@ -115,6 +115,8 @@ export default function InvestigatorWizardPage() {
           baseUrl: data.settings.llm.baseUrl,
           apiKey: data.settings.llm.apiKey,
           model: data.settings.llm.model,
+          temperature: data.settings.llm.temperature,
+          topP: data.settings.llm.topP,
           messages: [
             { role: "system", content: "You return structured text." },
             { role: "user", content: prompt },

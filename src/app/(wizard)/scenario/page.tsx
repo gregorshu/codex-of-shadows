@@ -60,6 +60,8 @@ export default function ScenarioWizardPage() {
           baseUrl: data.settings.llm.baseUrl,
           apiKey: data.settings.llm.apiKey,
           model: data.settings.llm.model,
+          temperature: data.settings.llm.temperature,
+          topP: data.settings.llm.topP,
           messages: [
             { role: "system", content: "You write concise scenario seeds." },
             { role: "user", content: prompt },

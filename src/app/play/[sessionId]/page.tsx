@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { TextArea } from "@/components/ui/TextArea";
 import { useAppData } from "@/lib/app-data-context";
-import { callKeeper, readLLMStream } from "@/lib/llm";
+import { callKeeper } from "@/lib/llm";
 import { AppShell } from "@/components/layout/AppShell";
 import { ChatMessage, Session } from "@/types";
 import { createId } from "@/lib/app-data-context";
@@ -23,13 +23,17 @@ const buildFallbackKeeperReply = (narration: string, silentFallback: string) => 
     "Call out cautiously to test who might answer.",
     "Advance toward the most striking feature nearby.",
     "Pause to steady yourself and recall what you know.",
+    "Propose your own action. Describe what you do in your own words.",
   ];
 
-  const choiceLines = [...baseChoices, "Propose your own action. Describe what you do in your own words."]
-    .map((choice, idx) => `${idx + 1}. ${choice}`)
-    .join("\n");
-
-  return `NARRATION:\n${safeNarration}\n\nCHOICES:\n${choiceLines}`;
+  return JSON.stringify(
+    {
+      narration: safeNarration,
+      choices: baseChoices,
+    },
+    null,
+    2,
+  );
 };
 
 export default function PlayPage() {
@@ -72,20 +76,32 @@ export default function PlayPage() {
       fallbackNarration: string;
     }) => {
       if (!session || !scenario || !investigator) return;
+      const keeperMessageId = createId();
       const keeperMessage: ChatMessage = {
-        id: createId(),
+        id: keeperMessageId,
         sessionId: session.id,
         role: "keeper",
         content: "",
         createdAt: new Date().toISOString(),
       };
 
+      const thinkingMessage: ChatMessage = {
+        ...keeperMessage,
+        content: t("keeperThinking"),
+        meta: { isSystemNote: true, isThinking: true },
+      };
+
       setIsStreaming(true);
       let fullTextRaw = "";
 
+      upsertSession({
+        ...sessionForContext,
+        chat: [...baseMessages, thinkingMessage],
+      });
+
       try {
         if (data.settings.llm.apiKey) {
-          const stream = await callKeeper({
+          fullTextRaw = await callKeeper({
             session: sessionForContext,
             scenario,
             investigator,
@@ -95,14 +111,6 @@ export default function PlayPage() {
             keeperCycleRules: data.settings.keeperCycleRules,
             keeperReplyFormat: data.settings.keeperReplyFormat,
             messages: baseMessages,
-          });
-          await readLLMStream(stream, (token) => {
-            fullTextRaw += token;
-            const fullText = sanitizeKeeperContent(fullTextRaw);
-            upsertSession({
-              ...sessionForContext,
-              chat: [...baseMessages, { ...keeperMessage, content: fullText }],
-            });
           });
           const fullText = sanitizeKeeperContent(fullTextRaw);
           const parsedKeeperTurn = parseKeeperReply(fullText);
@@ -283,23 +291,46 @@ export default function PlayPage() {
               <div key={message.id} className="flex flex-col gap-1">
                 <div className="text-xs uppercase tracking-[0.2em] text-subtle">{roleLabels[message.role]}</div>
                 <div className="rounded-xl bg-[#1d2026] px-4 py-3 text-sm leading-relaxed text-gray-100">
-                  {message.role === "keeper" && message.meta?.parsedKeeperTurn ? (
+                  {message.meta?.isThinking ? (
+                    <div className="flex items-center gap-3 text-subtle">
+                      <span>{message.content}</span>
+                      <div className="flex items-center gap-1" aria-hidden>
+                        <span className="h-2 w-2 rounded-full bg-gray-400 animate-bounce" />
+                        <span
+                          className="h-2 w-2 rounded-full bg-gray-400 animate-bounce"
+                          style={{ animationDelay: "150ms" }}
+                        />
+                        <span
+                          className="h-2 w-2 rounded-full bg-gray-400 animate-bounce"
+                          style={{ animationDelay: "300ms" }}
+                        />
+                      </div>
+                    </div>
+                  ) : message.role === "keeper" && message.meta?.parsedKeeperTurn ? (
                     <div className="space-y-2">
                       <div className="whitespace-pre-line">{message.meta.parsedKeeperTurn.narration}</div>
                       {message.meta.parsedKeeperTurn.choices.length > 0 && (
                         <div className="mt-3 border-t border-gray-700 pt-2 text-sm">
                           <div className="font-semibold mb-1">Choices:</div>
                           <ol className="space-y-1 list-decimal list-inside">
-                            {message.meta.parsedKeeperTurn.choices.map((choice, idx) => (
-                              <li key={idx}>
-                                <button
-                                  className="hover:underline text-gray-200 text-left"
-                                  onClick={() => handleChoiceClick(idx + 1, choice)}
-                                >
-                                  {choice}
-                                </button>
-                              </li>
-                            ))}
+                            {message.meta.parsedKeeperTurn.choices.map((choice, idx) => {
+                              const isCustomChoice =
+                                idx === message.meta?.parsedKeeperTurn?.choices.length - 1;
+                              return (
+                                <li key={idx}>
+                                  {isCustomChoice ? (
+                                    <span>{choice}</span>
+                                  ) : (
+                                    <button
+                                      className="hover:underline text-gray-200 text-left"
+                                      onClick={() => handleChoiceClick(idx + 1, choice)}
+                                    >
+                                      {choice}
+                                    </button>
+                                  )}
+                                </li>
+                              );
+                            })}
                           </ol>
                         </div>
                       )}
