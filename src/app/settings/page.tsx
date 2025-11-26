@@ -77,7 +77,7 @@ export default function SettingsPage() {
                 <select
                   value={language}
                   onChange={(event) => setLanguage(event.target.value as KeeperLanguage)}
-                  className="rounded-lg border border-outline bg-[#0f1116] px-3 py-2 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-slate-400/50"
+                  className="rounded-lg border border-outline bg-[var(--bg)] px-3 py-2 text-sm text-[color:var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-slate-400/50"
                 >
                   <option value="en">English</option>
                   <option value="ru">Russian</option>
@@ -88,7 +88,7 @@ export default function SettingsPage() {
                 <select
                   value={theme}
                   onChange={(event) => setTheme(event.target.value as "light" | "dark" | "system")}
-                  className="rounded-lg border border-outline bg-[#0f1116] px-3 py-2 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-slate-400/50"
+                  className="rounded-lg border border-outline bg-[var(--bg)] px-3 py-2 text-sm text-[color:var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-slate-400/50"
                 >
                   <option value="dark">Dark</option>
                   <option value="light">Light</option>

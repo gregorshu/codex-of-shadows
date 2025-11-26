@@ -4,33 +4,85 @@
 
 :root {
   color-scheme: dark;
+  --bg: #0f1116;
+  --text-primary: #e5e7eb;
+  --text-muted: #9ca3af;
+  --surface: #16181d;
+  --surface-strong: #1d2026;
+  --chip: #1f2937;
+  --border: #2c3038;
+  --button-primary-bg: #e5e7eb;
+  --button-primary-text: #0f172a;
+  --button-primary-hover: #ffffff;
+  --button-ghost-text: #e5e7eb;
+  --button-ghost-hover: var(--chip);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f8fafc;
+  --text-primary: #0f172a;
+  --text-muted: #475569;
+  --surface: #ffffff;
+  --surface-strong: #e2e8f0;
+  --chip: #cbd5e1;
+  --border: #cbd5e1;
+  --button-primary-bg: #0f172a;
+  --button-primary-text: #f8fafc;
+  --button-primary-hover: #1e293b;
+  --button-ghost-text: #0f172a;
+  --button-ghost-hover: #e2e8f0;
 }
 
 body {
-  background: #0f1116;
-  color: #e5e7eb;
+  background: var(--bg);
+  color: var(--text-primary);
   font-family: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 .border-outline {
-  border-color: #2c3038;
+  border-color: var(--border);
 }
 
 .card-surface {
-  background: #16181d;
+  background: var(--surface);
 }
 
 .card-strong {
-  background: #1d2026;
+  background: var(--surface-strong);
 }
 
 .text-subtle {
-  color: #9ca3af;
+  color: var(--text-muted);
 }
 
 input, textarea, select {
-  background: #0f1116;
-  border-color: #2c3038;
+  background: var(--bg);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+:root[data-theme="light"] .text-gray-100 {
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .text-gray-200 {
+  color: #1f2937;
+}
+
+:root[data-theme="light"] .bg-\[\#16181d\] {
+  background-color: var(--surface);
+  color: var(--text-primary);
+}
+
+:root[data-theme="light"] .bg-\[\#1d2026\] {
+  background-color: var(--surface-strong);
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .bg-\[\#1f2937\] {
+  background-color: var(--chip);
+  color: #0f172a;
 }
 
 ::-webkit-scrollbar {
@@ -38,6 +90,6 @@ input, textarea, select {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #2c3038;
+  background-color: var(--border);
   border-radius: 999px;
 }

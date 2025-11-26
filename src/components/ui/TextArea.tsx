@@ -11,7 +11,7 @@ export const TextArea: React.FC<TextAreaProps> = ({ label, className, ...props }
       {label && <span className="text-subtle">{label}</span>}
       <textarea
         className={clsx(
-          "min-h-[120px] rounded-lg border border-outline bg-[#0f1116] px-3 py-2 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-slate-400/50",
+          "min-h-[120px] rounded-lg border border-outline bg-[var(--bg)] px-3 py-2 text-sm text-[color:var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-slate-400/50",
           className
         )}
         {...props}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AppDataProvider } from "@/lib/app-data-context";
+import { SettingsApplier } from "@/components/SettingsApplier";
 
 const inter = Inter({ subsets: ["latin", "cyrillic"], variable: "--font-inter" });
 
@@ -17,8 +18,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.variable} bg-[#0f1116] text-gray-100`}>
-        <AppDataProvider>{children}</AppDataProvider>
+      <body className={`${inter.variable} bg-[var(--bg)] text-[color:var(--text-primary)]`}>
+        <AppDataProvider>
+          <SettingsApplier />
+          {children}
+        </AppDataProvider>
       </body>
     </html>
   );
