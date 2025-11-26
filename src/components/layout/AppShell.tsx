@@ -9,6 +9,7 @@ import { clsx } from "clsx";
 export const AppShell = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const showHome = pathname !== "/";
+  const isOnSettingsPage = pathname === "/settings";
   return (
     <div className="min-h-screen px-5 py-6 sm:px-10">
       <header className="mb-8 flex items-center justify-between">
@@ -26,15 +27,18 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
             <h1 className="text-xl font-semibold text-gray-100">AI Keeper Companion</h1>
           </div>
         </div>
-        <button
+        <Link
+          href="/settings"
           className={clsx(
             "flex h-10 w-10 items-center justify-center rounded-full border border-outline bg-[#16181d] text-gray-200",
-            "hover:bg-[#1f2937]"
+            "hover:bg-[#1f2937]",
+            isOnSettingsPage && "bg-[#1f2937]"
           )}
           aria-label="Settings"
+          aria-current={isOnSettingsPage ? "page" : undefined}
         >
           <GearIcon />
-        </button>
+        </Link>
       </header>
       {children}
     </div>
