@@ -11,6 +11,7 @@ export type ChatRole = "player" | "keeper" | "system";
 export interface AppSettings {
   language: KeeperLanguage;
   theme: KeeperTheme;
+  keeperSystemPrompt: string;
   llm: {
     model: string;
     baseUrl?: string;

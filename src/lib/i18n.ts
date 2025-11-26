@@ -19,6 +19,8 @@ const baseTranslations = {
 
     settingsTitle: "Settings",
     settingsSubtitle: "Configure the Keeper language, theme, and LLM connection used across the app.",
+    settingsTabGeneral: "General",
+    settingsTabKeeperPrompt: "Keeper system prompt",
     settingsGeneralHeading: "General",
     settingsGeneralDescription: "Choose defaults for generated content and UI presentation.",
     settingsLanguageLabel: "App language",
@@ -39,6 +41,11 @@ const baseTranslations = {
     settingsStorageNote: "Settings are stored locally in your browser and used for all future sessions.",
     settingsSaveButton: "Save settings",
     settingsSavedStatus: "Saved",
+    settingsKeeperPromptHeading: "Keeper prompt",
+    settingsKeeperPromptDescription:
+      "Edit the system prompt applied before every Keeper response. Customize it to fit your table.",
+    settingsKeeperPromptLabel: "System prompt",
+    settingsKeeperPromptNote: "Stored locally and sent with all Keeper LLM calls.",
 
     investigatorWizardBadge: "Investigator wizard",
     investigatorWizardTitle: "Create your character",
@@ -142,6 +149,8 @@ export const translations: Record<KeeperLanguage, Record<TranslationKey, string>
 
     settingsTitle: "Настройки",
     settingsSubtitle: "Выберите язык Хранителя и интерфейса, тему и подключение к LLM.",
+    settingsTabGeneral: "Общее",
+    settingsTabKeeperPrompt: "Системный промпт Хранителя",
     settingsGeneralHeading: "Общее",
     settingsGeneralDescription: "Задайте параметры для контента и отображения интерфейса.",
     settingsLanguageLabel: "Язык приложения",
@@ -162,6 +171,11 @@ export const translations: Record<KeeperLanguage, Record<TranslationKey, string>
     settingsStorageNote: "Настройки хранятся локально в браузере и применяются ко всем сессиям.",
     settingsSaveButton: "Сохранить настройки",
     settingsSavedStatus: "Сохранено",
+    settingsKeeperPromptHeading: "Промпт Хранителя",
+    settingsKeeperPromptDescription:
+      "Измените системный промпт, который используется перед каждым ответом Хранителя.",
+    settingsKeeperPromptLabel: "Системный промпт",
+    settingsKeeperPromptNote: "Хранится локально и отправляется во все запросы к LLM для Хранителя.",
 
     investigatorWizardBadge: "Мастер следователя",
     investigatorWizardTitle: "Создайте персонажа",
@@ -259,6 +273,8 @@ export const translations: Record<KeeperLanguage, Record<TranslationKey, string>
 
     settingsTitle: "Paramètres",
     settingsSubtitle: "Choisissez le langage du Gardien et de l'interface, le thème et la connexion LLM.",
+    settingsTabGeneral: "Général",
+    settingsTabKeeperPrompt: "Prompt système du Gardien",
     settingsGeneralHeading: "Général",
     settingsGeneralDescription: "Définissez les valeurs par défaut pour le contenu généré et l'affichage.",
     settingsLanguageLabel: "Langue de l'application",
@@ -281,6 +297,11 @@ export const translations: Record<KeeperLanguage, Record<TranslationKey, string>
       "Les paramètres sont stockés localement dans votre navigateur et utilisés pour toutes les sessions futures.",
     settingsSaveButton: "Enregistrer les paramètres",
     settingsSavedStatus: "Enregistré",
+    settingsKeeperPromptHeading: "Prompt du Gardien",
+    settingsKeeperPromptDescription:
+      "Modifiez le prompt système envoyé avant chaque réponse du Gardien.",
+    settingsKeeperPromptLabel: "Prompt système",
+    settingsKeeperPromptNote: "Stocké localement et envoyé à tous les appels LLM du Gardien.",
 
     investigatorWizardBadge: "Assistant personnage",
     investigatorWizardTitle: "Créez votre personnage",
@@ -378,6 +399,8 @@ export const translations: Record<KeeperLanguage, Record<TranslationKey, string>
 
     settingsTitle: "Ajustes",
     settingsSubtitle: "Define el idioma del Guardián y la interfaz, el tema y la conexión LLM.",
+    settingsTabGeneral: "General",
+    settingsTabKeeperPrompt: "Prompt del Guardián",
     settingsGeneralHeading: "General",
     settingsGeneralDescription: "Elige valores predeterminados para el contenido y la presentación del UI.",
     settingsLanguageLabel: "Idioma de la aplicación",
@@ -399,6 +422,11 @@ export const translations: Record<KeeperLanguage, Record<TranslationKey, string>
     settingsStorageNote: "Los ajustes se guardan localmente en tu navegador y se usan en futuras sesiones.",
     settingsSaveButton: "Guardar ajustes",
     settingsSavedStatus: "Guardado",
+    settingsKeeperPromptHeading: "Prompt del Guardián",
+    settingsKeeperPromptDescription:
+      "Edita el prompt del sistema que se envía antes de cada respuesta del Guardián.",
+    settingsKeeperPromptLabel: "Prompt del sistema",
+    settingsKeeperPromptNote: "Se guarda localmente y se envía en todas las futuras llamadas LLM del Guardián.",
 
     investigatorWizardBadge: "Asistente de investigador",
     investigatorWizardTitle: "Crea tu personaje",
