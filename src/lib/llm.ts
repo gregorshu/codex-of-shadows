@@ -5,6 +5,18 @@ import { KEEPER_CYCLE_INSTRUCTIONS } from "@/lib/keeperPrompt";
 
 type LLMMessage = { role: "system" | "user" | "assistant"; content: string };
 
+const ENV_FALLBACK_BASE_URL = process.env.NEXT_PUBLIC_LLM_BASE_URL;
+
+function resolveBaseUrl(baseUrl?: string) {
+  const configured = baseUrl || ENV_FALLBACK_BASE_URL;
+  if (!configured) {
+    throw new Error("LLM base URL is not configured. Set it in Settings.");
+  }
+  const trimmed = configured.replace(/\/+$/, "");
+  if (trimmed.endsWith("/v1")) return trimmed.slice(0, -3);
+  return trimmed;
+}
+
 export async function callLLM({
   messages,
   model,
@@ -16,7 +28,7 @@ export async function callLLM({
   apiKey?: string;
   baseUrl?: string;
 }): Promise<ReadableStream<Uint8Array>> {
-  const url = `${baseUrl || "https://api.openai.com"}/v1/chat/completions`;
+  const url = `${resolveBaseUrl(baseUrl)}/v1/chat/completions`;
   const response = await fetch(url, {
     method: "POST",
     headers: {

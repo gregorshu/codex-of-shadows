@@ -152,7 +152,7 @@ export default function SettingsPage() {
                     label={t("settingsBaseUrlLabel")}
                     value={baseUrl}
                     onChange={(event) => setBaseUrl(event.target.value)}
-                    placeholder="https://api.openai.com/v1"
+                    placeholder="https://your-llm-endpoint.example.com"
                   />
                   <Input
                     label={t("settingsApiKeyLabel")}
