@@ -100,6 +100,10 @@ const baseTranslations = {
     sessionStateDefault: "Investigation begins.",
     sessionStartLogTitle: "Session started",
     sessionStateLabel: "Session state",
+    keeperIntroPrompt:
+      "Begin the session for {{investigator}} in the '{{scenario}}' scenario with an evocative opening scene and immediate hook.",
+    keeperIntroFallback:
+      "The Keeper opens the session with a hushed tone, painting the room around you and hinting at the first ripple of trouble.",
 
     sessionNotFound: "Session not found.",
     returnHome: "Return home",
@@ -231,6 +235,10 @@ export const translations: Record<KeeperLanguage, Record<TranslationKey, string>
     sessionStateDefault: "Расследование начинается.",
     sessionStartLogTitle: "Сессия началась",
     sessionStateLabel: "Состояние сессии",
+    keeperIntroPrompt:
+      "Начни сессию для {{investigator}} в сценарии «{{scenario}}», задав атмосферную сцену и первый крючок для действия.",
+    keeperIntroFallback:
+      "Хранитель вполголоса описывает вокруг вас обстановку, намекая на первую волну неприятностей.",
 
     sessionNotFound: "Сессия не найдена.",
     returnHome: "Вернуться домой",
@@ -358,6 +366,10 @@ export const translations: Record<KeeperLanguage, Record<TranslationKey, string>
     sessionStateDefault: "L'enquête commence.",
     sessionStartLogTitle: "Session commencée",
     sessionStateLabel: "État de la session",
+    keeperIntroPrompt:
+      "Commence la session pour {{investigator}} dans le scénario « {{scenario}} » avec une scène d'ouverture évocatrice et un crochet immédiat.",
+    keeperIntroFallback:
+      "Le Gardien ouvre la session d'une voix feutrée, dépeignant la pièce autour de vous et laissant filtrer le premier signe d'ennui.",
 
     sessionNotFound: "Session introuvable.",
     returnHome: "Retour à l'accueil",
@@ -484,6 +496,10 @@ export const translations: Record<KeeperLanguage, Record<TranslationKey, string>
     sessionStateDefault: "Comienza la investigación.",
     sessionStartLogTitle: "Sesión iniciada",
     sessionStateLabel: "Estado de la sesión",
+    keeperIntroPrompt:
+      "Inicia la sesión para {{investigator}} en el escenario «{{scenario}}» con una escena inicial evocadora y un gancho inmediato.",
+    keeperIntroFallback:
+      "El Guardián abre la sesión en tono bajo, describiendo la habitación a tu alrededor y dejando caer el primer indicio de problemas.",
 
     sessionNotFound: "Sesión no encontrada.",
     returnHome: "Volver al inicio",
