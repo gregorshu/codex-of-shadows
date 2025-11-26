@@ -1,9 +1,13 @@
 import { AppData } from "@/types";
 import { predefinedScenarios } from "@/data/predefinedScenarios";
 import { DEFAULT_KEEPER_SYSTEM_PROMPT } from "@/data/defaultKeeperSystemPrompt";
+import {
+  DEFAULT_KEEPER_CYCLE_RULES,
+  DEFAULT_KEEPER_REPLY_FORMAT,
+} from "@/lib/keeperPrompt";
 
 export const STORAGE_KEY = "coc_keeper_app_data_v1";
-export const CURRENT_VERSION = 2;
+export const CURRENT_VERSION = 3;
 
 const defaultData: AppData = {
   version: CURRENT_VERSION,
@@ -11,6 +15,8 @@ const defaultData: AppData = {
     language: "en",
     theme: "dark",
     keeperSystemPrompt: DEFAULT_KEEPER_SYSTEM_PROMPT,
+    keeperCycleRules: DEFAULT_KEEPER_CYCLE_RULES,
+    keeperReplyFormat: DEFAULT_KEEPER_REPLY_FORMAT,
     llm: {
       model: "gpt-4o-mini",
       temperature: 0.7,
@@ -32,6 +38,17 @@ export function migrateData(data: AppData): AppData {
       settings: {
         ...migrated.settings,
         keeperSystemPrompt: DEFAULT_KEEPER_SYSTEM_PROMPT,
+      },
+    };
+  }
+
+  if (!migrated.settings.keeperCycleRules || !migrated.settings.keeperReplyFormat) {
+    migrated = {
+      ...migrated,
+      settings: {
+        ...migrated.settings,
+        keeperCycleRules: migrated.settings.keeperCycleRules || DEFAULT_KEEPER_CYCLE_RULES,
+        keeperReplyFormat: migrated.settings.keeperReplyFormat || DEFAULT_KEEPER_REPLY_FORMAT,
       },
     };
   }

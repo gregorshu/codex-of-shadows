@@ -10,12 +10,15 @@ import { KeeperLanguage, KeeperTheme } from "@/types";
 import { LANGUAGE_NATIVE_NAMES, useTranslation } from "@/lib/i18n";
 import { TextArea } from "@/components/ui/TextArea";
 import { DEFAULT_KEEPER_SYSTEM_PROMPT } from "@/data/defaultKeeperSystemPrompt";
+import { DEFAULT_KEEPER_CYCLE_RULES, DEFAULT_KEEPER_REPLY_FORMAT } from "@/lib/keeperPrompt";
 
 export default function SettingsPage() {
   const { data, updateData } = useAppData();
   const { t } = useTranslation();
 
-  const [activeTab, setActiveTab] = useState<"general" | "keeperPrompt">("general");
+  const [activeTab, setActiveTab] = useState<
+    "general" | "keeperPrompt" | "cycleRules" | "replyFormat"
+  >("general");
   const [language, setLanguage] = useState<KeeperLanguage>(data.settings.language);
   const [theme, setTheme] = useState<KeeperTheme>(data.settings.theme);
   const [model, setModel] = useState(data.settings.llm.model);
@@ -27,6 +30,12 @@ export default function SettingsPage() {
   const [topP, setTopP] = useState(data.settings.llm.topP?.toString() ?? "0.9");
   const [keeperSystemPrompt, setKeeperSystemPrompt] = useState(
     data.settings.keeperSystemPrompt || DEFAULT_KEEPER_SYSTEM_PROMPT
+  );
+  const [keeperCycleRules, setKeeperCycleRules] = useState(
+    data.settings.keeperCycleRules || DEFAULT_KEEPER_CYCLE_RULES
+  );
+  const [keeperReplyFormat, setKeeperReplyFormat] = useState(
+    data.settings.keeperReplyFormat || DEFAULT_KEEPER_REPLY_FORMAT
   );
   const [status, setStatus] = useState<"idle" | "saved">("idle");
 
@@ -44,6 +53,8 @@ export default function SettingsPage() {
           language,
           theme,
           keeperSystemPrompt,
+          keeperCycleRules,
+          keeperReplyFormat,
           llm: {
             ...prev.settings.llm,
             model,
@@ -93,6 +104,28 @@ export default function SettingsPage() {
               onClick={() => setActiveTab("keeperPrompt")}
             >
               {t("settingsTabKeeperPrompt")}
+            </button>
+            <button
+              type="button"
+              className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                activeTab === "cycleRules"
+                  ? "border-accent bg-accent/10 text-gray-100"
+                  : "border-outline text-subtle hover:border-accent/50 hover:text-gray-100"
+              }`}
+              onClick={() => setActiveTab("cycleRules")}
+            >
+              {t("settingsTabCycleRules")}
+            </button>
+            <button
+              type="button"
+              className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                activeTab === "replyFormat"
+                  ? "border-accent bg-accent/10 text-gray-100"
+                  : "border-outline text-subtle hover:border-accent/50 hover:text-gray-100"
+              }`}
+              onClick={() => setActiveTab("replyFormat")}
+            >
+              {t("settingsTabReplyFormat")}
             </button>
           </div>
 
@@ -188,11 +221,11 @@ export default function SettingsPage() {
             </>
           )}
 
-          {activeTab === "keeperPrompt" && (
-            <Card className="space-y-4 p-6">
-              <div className="space-y-1">
-                <h2 className="text-lg font-semibold text-gray-100">{t("settingsKeeperPromptHeading")}</h2>
-                <p className="text-subtle text-sm">{t("settingsKeeperPromptDescription")}</p>
+        {activeTab === "keeperPrompt" && (
+          <Card className="space-y-4 p-6">
+            <div className="space-y-1">
+              <h2 className="text-lg font-semibold text-gray-100">{t("settingsKeeperPromptHeading")}</h2>
+              <p className="text-subtle text-sm">{t("settingsKeeperPromptDescription")}</p>
               </div>
               <TextArea
                 label={t("settingsKeeperPromptLabel")}
@@ -200,6 +233,36 @@ export default function SettingsPage() {
                 onChange={(event) => setKeeperSystemPrompt(event.target.value)}
               />
               <p className="text-subtle text-xs">{t("settingsKeeperPromptNote")}</p>
+            </Card>
+          )}
+
+          {activeTab === "cycleRules" && (
+            <Card className="space-y-4 p-6">
+              <div className="space-y-1">
+                <h2 className="text-lg font-semibold text-gray-100">{t("settingsCycleHeading")}</h2>
+                <p className="text-subtle text-sm">{t("settingsCycleDescription")}</p>
+              </div>
+              <TextArea
+                label={t("settingsCycleLabel")}
+                value={keeperCycleRules}
+                onChange={(event) => setKeeperCycleRules(event.target.value)}
+              />
+              <p className="text-subtle text-xs">{t("settingsCycleNote")}</p>
+            </Card>
+          )}
+
+          {activeTab === "replyFormat" && (
+            <Card className="space-y-4 p-6">
+              <div className="space-y-1">
+                <h2 className="text-lg font-semibold text-gray-100">{t("settingsReplyFormatHeading")}</h2>
+                <p className="text-subtle text-sm">{t("settingsReplyFormatDescription")}</p>
+              </div>
+              <TextArea
+                label={t("settingsReplyFormatLabel")}
+                value={keeperReplyFormat}
+                onChange={(event) => setKeeperReplyFormat(event.target.value)}
+              />
+              <p className="text-subtle text-xs">{t("settingsReplyFormatNote")}</p>
             </Card>
           )}
 

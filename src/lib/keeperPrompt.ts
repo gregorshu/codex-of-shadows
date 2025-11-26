@@ -1,4 +1,4 @@
-export const KEEPER_CYCLE_INSTRUCTIONS = `
+export const DEFAULT_KEEPER_CYCLE_RULES = `
 You are the Keeper of Arcane Lore for a Call of Cthulhu scenario.
 
 Follow this strict cycle for every turn:
@@ -36,7 +36,9 @@ Follow this strict cycle for every turn:
 - Then return to step 1 with the new state of the scene.
 
 Stay in-fiction at all times unless the player explicitly asks for meta or rules.
+`;
 
+export const DEFAULT_KEEPER_REPLY_FORMAT = `
 REPLY FORMAT (USE THIS EXACTLY)
 
 NARRATION:
@@ -51,3 +53,16 @@ CHOICES:
 
 Never output anything outside the NARRATION: and CHOICES: blocks.
 `;
+
+export function buildKeeperInstructions({
+  cycleRules,
+  replyFormat,
+}: {
+  cycleRules?: string;
+  replyFormat?: string;
+}) {
+  const rules = (cycleRules || DEFAULT_KEEPER_CYCLE_RULES).trim();
+  const format = (replyFormat || DEFAULT_KEEPER_REPLY_FORMAT).trim();
+
+  return `${rules}\n\n${format}`.trim();
+}

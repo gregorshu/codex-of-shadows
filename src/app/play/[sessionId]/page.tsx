@@ -101,6 +101,8 @@ export default function PlayPage() {
             newUserMessage: userMessage,
             llmConfig: data.settings.llm,
             keeperSystemPrompt: data.settings.keeperSystemPrompt,
+            keeperCycleRules: data.settings.keeperCycleRules,
+            keeperReplyFormat: data.settings.keeperReplyFormat,
             messages: baseMessages,
           });
           await readLLMStream(stream, (token) => {
@@ -168,6 +170,8 @@ export default function PlayPage() {
       scenario,
       session,
       t,
+      data.settings.keeperCycleRules,
+      data.settings.keeperReplyFormat,
       upsertSession,
     ],
   );
