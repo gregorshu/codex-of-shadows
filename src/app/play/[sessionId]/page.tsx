@@ -77,6 +77,7 @@ export default function PlayPage() {
     });
 
     setIsStreaming(true);
+    let fullTextRaw = "";
 
     try {
       if (data.settings.llm.apiKey) {
@@ -89,7 +90,6 @@ export default function PlayPage() {
           keeperSystemPrompt: data.settings.keeperSystemPrompt,
           messages: baseMessages,
         });
-        let fullTextRaw = "";
         await readLLMStream(stream, (token) => {
           fullTextRaw += token;
           const fullText = sanitizeKeeperContent(fullTextRaw);
@@ -124,15 +124,16 @@ export default function PlayPage() {
         });
       }
     } catch (error) {
-      console.error("LLM intro failed", error);
+      console.error("Keeper intro failed", error);
+      const fallbackContent = sanitizeKeeperContent(fullTextRaw).trim() || t("keeperSilentFallback");
       upsertSession({
         ...updatedSession,
         chat: [
           ...baseMessages,
           {
             ...keeperMessage,
-            content: t("keeperSilentFallback"),
-            meta: { parsedKeeperTurn: parseKeeperReply(t("keeperSilentFallback")) },
+            content: fallbackContent,
+            meta: { parsedKeeperTurn: parseKeeperReply(fallbackContent) },
           },
         ],
         lastOpenedAt: new Date().toISOString(),
@@ -175,6 +176,7 @@ export default function PlayPage() {
     setEditMessageId(null);
 
     setIsStreaming(true);
+    let fullTextRaw = "";
     const keeperMessage: ChatMessage = {
       id: createId(),
       sessionId: session.id,
@@ -194,7 +196,6 @@ export default function PlayPage() {
           keeperSystemPrompt: data.settings.keeperSystemPrompt,
           messages: baseMessages,
         });
-        let fullTextRaw = "";
         await readLLMStream(stream, (token) => {
           fullTextRaw += token;
           const fullText = sanitizeKeeperContent(fullTextRaw);
@@ -230,14 +231,15 @@ export default function PlayPage() {
       }
     } catch (error) {
       console.error("LLM chat failed", error);
+      const fallbackContent = sanitizeKeeperContent(fullTextRaw).trim() || t("keeperSilentFallback");
       upsertSession({
         ...updatedSession,
         chat: [
           ...updatedSession.chat,
           {
             ...keeperMessage,
-            content: t("keeperSilentFallback"),
-            meta: { parsedKeeperTurn: parseKeeperReply(t("keeperSilentFallback")) },
+            content: fallbackContent,
+            meta: { parsedKeeperTurn: parseKeeperReply(fallbackContent) },
           },
         ],
         lastOpenedAt: new Date().toISOString(),
