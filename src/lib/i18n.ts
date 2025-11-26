@@ -4,7 +4,7 @@ import { KeeperLanguage } from "@/types";
 
 const baseTranslations = {
   en: {
-    appTagline: "Call of Cthulhu Keeper",
+    appTagline: "Codex of Shadows",
     appTitle: "AI Keeper Companion",
     settingsAriaLabel: "Settings",
 

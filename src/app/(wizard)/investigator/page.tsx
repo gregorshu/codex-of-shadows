@@ -45,6 +45,7 @@ export default function InvestigatorWizardPage() {
   }, [scenario?.id]);
 
   const autoGenerate = async () => {
+    const fallback = fallbackInvestigatorByLanguage[language];
     setLoading(true);
     const prompt = `Create an investigator concept for a Call of Cthulhu one-shot.\nReturn:\n- Name\n- Occupation\n- 3–5 sentence background\n- 3 personality traits\n- A short summary of their main skills (not mechanical percentages)\nTone: grounded, slightly noir, not comedic.\nRespond in ${LANGUAGE_ENGLISH_NAMES[language]}.`;
     try {
@@ -67,20 +68,21 @@ export default function InvestigatorWizardPage() {
           fullText += decoder.decode(value, { stream: true });
         }
         const parts = fullText.split("\n").filter(Boolean);
+        const generatedTraits = parts
+          .slice(4, 7)
+          .map((t) => t.replace(/^-\s?/, "").trim())
+          .filter(Boolean)
+          .slice(0, 3);
+
         setInvestigator((prev) => ({
           ...prev,
-          name: parts[0]?.replace(/Name:/i, "").trim() || prev.name,
-          occupation: parts[1]?.replace(/Occupation:/i, "").trim() || prev.occupation,
-          background: parts.slice(2, 4).join(" ") || prev.background,
-          personalityTraits: parts
-            .slice(4, 7)
-            .map((t) => t.replace(/^-\s?/, "").trim())
-            .filter(Boolean)
-            .slice(0, 3),
-          skillsSummary: parts.slice(7).join(" ") || prev.skillsSummary,
+          name: parts[0]?.replace(/Name:/i, "").trim() || fallback.name,
+          occupation: parts[1]?.replace(/Occupation:/i, "").trim() || fallback.occupation,
+          background: parts.slice(2, 4).join(" ") || fallback.background,
+          personalityTraits: generatedTraits.length ? generatedTraits : fallback.traits,
+          skillsSummary: parts.slice(7).join(" ") || fallback.skills,
         }));
       } else {
-        const fallback = fallbackInvestigatorByLanguage[language];
         setInvestigator((prev) => ({
           ...prev,
           name: fallback.name,
@@ -92,6 +94,14 @@ export default function InvestigatorWizardPage() {
       }
     } catch (error) {
       console.error("Failed to generate investigator", error);
+      setInvestigator((prev) => ({
+        ...prev,
+        name: fallback.name,
+        occupation: fallback.occupation,
+        background: fallback.background,
+        personalityTraits: fallback.traits,
+        skillsSummary: fallback.skills,
+      }));
     } finally {
       setLoading(false);
       setStep(2);

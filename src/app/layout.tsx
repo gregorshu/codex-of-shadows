@@ -7,7 +7,7 @@ import { SettingsApplier } from "@/components/SettingsApplier";
 const inter = Inter({ subsets: ["latin", "cyrillic"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Call of Cthulhu Keeper",
+  title: "Codex of Shadows",
   description: "Local-first AI Keeper for Call of Cthulhu sessions",
 };
 
