@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { ReloadIcon } from "@radix-ui/react-icons";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -38,6 +39,16 @@ export default function SettingsPage() {
     data.settings.keeperReplyFormat || DEFAULT_KEEPER_REPLY_FORMAT
   );
   const [status, setStatus] = useState<"idle" | "saved">("idle");
+
+  const resetTabDefaults = () => {
+    if (activeTab === "keeperPrompt") {
+      setKeeperSystemPrompt(DEFAULT_KEEPER_SYSTEM_PROMPT);
+    } else if (activeTab === "cycleRules") {
+      setKeeperCycleRules(DEFAULT_KEEPER_CYCLE_RULES);
+    } else if (activeTab === "replyFormat") {
+      setKeeperReplyFormat(DEFAULT_KEEPER_REPLY_FORMAT);
+    }
+  };
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -223,43 +234,76 @@ export default function SettingsPage() {
 
         {activeTab === "keeperPrompt" && (
           <Card className="space-y-4 p-6">
-            <div className="space-y-1">
-              <h2 className="text-lg font-semibold text-gray-100">{t("settingsKeeperPromptHeading")}</h2>
-              <p className="text-subtle text-sm">{t("settingsKeeperPromptDescription")}</p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1">
+                <h2 className="text-lg font-semibold text-gray-100">{t("settingsKeeperPromptHeading")}</h2>
+                <p className="text-subtle text-sm">{t("settingsKeeperPromptDescription")}</p>
               </div>
-              <TextArea
-                label={t("settingsKeeperPromptLabel")}
-                value={keeperSystemPrompt}
+              <button
+                type="button"
+                aria-label={t("settingsResetTab")}
+                title={t("settingsResetTab")}
+                onClick={resetTabDefaults}
+                className="mt-1 flex h-9 w-9 items-center justify-center rounded-lg border border-outline text-subtle transition hover:border-accent/60 hover:text-gray-100"
+              >
+                <ReloadIcon className="h-4 w-4" />
+              </button>
+            </div>
+            <TextArea
+              label={t("settingsKeeperPromptLabel")}
+              value={keeperSystemPrompt}
                 onChange={(event) => setKeeperSystemPrompt(event.target.value)}
               />
               <p className="text-subtle text-xs">{t("settingsKeeperPromptNote")}</p>
             </Card>
           )}
 
-          {activeTab === "cycleRules" && (
-            <Card className="space-y-4 p-6">
+        {activeTab === "cycleRules" && (
+          <Card className="space-y-4 p-6">
+            <div className="flex items-start justify-between gap-3">
               <div className="space-y-1">
                 <h2 className="text-lg font-semibold text-gray-100">{t("settingsCycleHeading")}</h2>
                 <p className="text-subtle text-sm">{t("settingsCycleDescription")}</p>
               </div>
-              <TextArea
-                label={t("settingsCycleLabel")}
-                value={keeperCycleRules}
+              <button
+                type="button"
+                aria-label={t("settingsResetTab")}
+                title={t("settingsResetTab")}
+                onClick={resetTabDefaults}
+                className="mt-1 flex h-9 w-9 items-center justify-center rounded-lg border border-outline text-subtle transition hover:border-accent/60 hover:text-gray-100"
+              >
+                <ReloadIcon className="h-4 w-4" />
+              </button>
+            </div>
+            <TextArea
+              label={t("settingsCycleLabel")}
+              value={keeperCycleRules}
                 onChange={(event) => setKeeperCycleRules(event.target.value)}
               />
               <p className="text-subtle text-xs">{t("settingsCycleNote")}</p>
             </Card>
           )}
 
-          {activeTab === "replyFormat" && (
-            <Card className="space-y-4 p-6">
+        {activeTab === "replyFormat" && (
+          <Card className="space-y-4 p-6">
+            <div className="flex items-start justify-between gap-3">
               <div className="space-y-1">
                 <h2 className="text-lg font-semibold text-gray-100">{t("settingsReplyFormatHeading")}</h2>
                 <p className="text-subtle text-sm">{t("settingsReplyFormatDescription")}</p>
               </div>
-              <TextArea
-                label={t("settingsReplyFormatLabel")}
-                value={keeperReplyFormat}
+              <button
+                type="button"
+                aria-label={t("settingsResetTab")}
+                title={t("settingsResetTab")}
+                onClick={resetTabDefaults}
+                className="mt-1 flex h-9 w-9 items-center justify-center rounded-lg border border-outline text-subtle transition hover:border-accent/60 hover:text-gray-100"
+              >
+                <ReloadIcon className="h-4 w-4" />
+              </button>
+            </div>
+            <TextArea
+              label={t("settingsReplyFormatLabel")}
+              value={keeperReplyFormat}
                 onChange={(event) => setKeeperReplyFormat(event.target.value)}
               />
               <p className="text-subtle text-xs">{t("settingsReplyFormatNote")}</p>
