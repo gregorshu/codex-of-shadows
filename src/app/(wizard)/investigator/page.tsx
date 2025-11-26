@@ -47,16 +47,49 @@ export default function InvestigatorWizardPage() {
   const autoGenerate = async () => {
     const fallback = fallbackInvestigatorByLanguage[language];
     setLoading(true);
-    const prompt = `Create an investigator concept for a Call of Cthulhu one-shot. Keep it concise and grounded.\nRespond exactly in this format with no extra commentary or markdown bullets:\nName: <name>\nOccupation: <occupation>\nBackground: <3-5 sentence background>\nTraits: <three traits, 1-2 words each separated by commas>\nSkills: <short summary of their main skills (not mechanical percentages)>\nRespond in ${LANGUAGE_ENGLISH_NAMES[language]}.`;
+    const prompt = `Create an investigator concept for a Call of Cthulhu one-shot. Keep it concise and grounded.\nRespond ONLY with a single JSON object in this exact shape and nothing else (no code fences, no commentary):\n{"name":"<name>","occupation":"<occupation>","background":"<3-5 sentence background>","traits":["<trait 1>","<trait 2>","<trait 3>"],"skills":"<short summary of their main skills (not mechanical percentages)>"}\nRespond in ${LANGUAGE_ENGLISH_NAMES[language]}.`;
 
     const cleanValue = (value: string) =>
       value
+        .replace(/^openrouter processing\s*/i, "")
         .replace(/^[-*•\s]*/, "")
         .replace(/^\*+|\*+$/g, "")
         .replace(/^(Name|Occupation|Background|Traits|Skills)[:\s-]*/i, "")
         .trim();
 
     const normalizeKey = (key: string) => key.toLowerCase().replace(/[^a-z]/g, "");
+
+    const parseStructuredResponse = (response: string) => {
+      const sanitized = response
+        .replace(/```json\s*|```/gi, "")
+        .trim();
+
+      try {
+        const parsed = JSON.parse(sanitized) as {
+          name?: string;
+          occupation?: string;
+          background?: string;
+          traits?: string[];
+          skills?: string;
+        };
+
+        return {
+          name: parsed.name ? cleanValue(parsed.name) : "",
+          occupation: parsed.occupation ? cleanValue(parsed.occupation) : "",
+          background: parsed.background ? cleanValue(parsed.background) : "",
+          traits: Array.isArray(parsed.traits)
+            ? parsed.traits
+                .map((trait) => cleanValue(String(trait)))
+                .filter(Boolean)
+                .map((trait) => trait.split(/\s+/).slice(0, 2).join(" "))
+                .slice(0, 3)
+            : [],
+          skills: parsed.skills ? cleanValue(parsed.skills) : "",
+        };
+      } catch {
+        return null;
+      }
+    };
 
     try {
       if (data.settings.llm.apiKey) {
@@ -75,6 +108,8 @@ export default function InvestigatorWizardPage() {
           .map((line) => line.trim())
           .filter(Boolean);
 
+        const structured = parseStructuredResponse(fullText);
+
         const parsed = lines.reduce<Record<string, string>>((acc, line) => {
           const [label, ...rest] = line.split(":");
           if (!rest.length) return acc;
@@ -83,20 +118,27 @@ export default function InvestigatorWizardPage() {
           return acc;
         }, {});
 
-        const generatedTraits = (parsed.traits || parsed.personalitytraits || "")
-          .split(/[,;\n]/)
-          .map((trait) => trait.trim())
-          .filter(Boolean)
-          .map((trait) => trait.split(/\s+/).slice(0, 2).join(" "))
-          .slice(0, 3);
+        const generatedTraits = structured?.traits?.length
+          ? structured.traits
+          : (parsed.traits || parsed.personalitytraits || "")
+              .split(/[,;\n]/)
+              .map((trait) => trait.trim())
+              .filter(Boolean)
+              .map((trait) => trait.split(/\s+/).slice(0, 2).join(" "))
+              .slice(0, 3);
 
         setInvestigator((prev) => ({
           ...prev,
-          name: cleanValue(parsed.name || lines[0] || "") || fallback.name,
-          occupation: cleanValue(parsed.occupation || lines[1] || "") || fallback.occupation,
-          background: cleanValue(parsed.background || lines.slice(2, 4).join(" ")) || fallback.background,
+          name: cleanValue(structured?.name || parsed.name || lines[0] || "") || fallback.name,
+          occupation: cleanValue(structured?.occupation || parsed.occupation || lines[1] || "") ||
+            fallback.occupation,
+          background:
+            cleanValue(structured?.background || parsed.background || lines.slice(2, 4).join(" ")) ||
+            fallback.background,
           personalityTraits: generatedTraits.length ? generatedTraits : fallback.traits,
-          skillsSummary: cleanValue(parsed.skills || parsed.mainskills || lines.slice(4).join(" ")) || fallback.skills,
+          skillsSummary:
+            cleanValue(structured?.skills || parsed.skills || parsed.mainskills || lines.slice(4).join(" ")) ||
+            fallback.skills,
         }));
       } else {
         setInvestigator((prev) => ({
