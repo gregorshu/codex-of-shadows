@@ -13,6 +13,9 @@ import { createId } from "@/lib/app-data-context";
 import { useTranslation } from "@/lib/i18n";
 import { parseKeeperReply } from "@/lib/keeperParser";
 
+const sanitizeKeeperContent = (text: string) =>
+  text.replace(/openrouter\s*proc\w*[^\n]*\n?/gi, "");
+
 export default function PlayPage() {
   const params = useParams<{ sessionId: string }>();
   const router = useRouter();
@@ -86,14 +89,16 @@ export default function PlayPage() {
           keeperSystemPrompt: data.settings.keeperSystemPrompt,
           messages: baseMessages,
         });
-        let fullText = "";
+        let fullTextRaw = "";
         await readLLMStream(stream, (token) => {
-          fullText += token;
+          fullTextRaw += token;
+          const fullText = sanitizeKeeperContent(fullTextRaw);
           upsertSession({
             ...updatedSession,
             chat: [...baseMessages, { ...keeperMessage, content: fullText }],
           });
         });
+        const fullText = sanitizeKeeperContent(fullTextRaw);
         const parsedKeeperTurn = parseKeeperReply(fullText);
         upsertSession({
           ...updatedSession,
@@ -189,14 +194,16 @@ export default function PlayPage() {
           keeperSystemPrompt: data.settings.keeperSystemPrompt,
           messages: baseMessages,
         });
-        let fullText = "";
+        let fullTextRaw = "";
         await readLLMStream(stream, (token) => {
-          fullText += token;
+          fullTextRaw += token;
+          const fullText = sanitizeKeeperContent(fullTextRaw);
           upsertSession({
             ...updatedSession,
             chat: [...updatedSession.chat, { ...keeperMessage, content: fullText }],
           });
         });
+        const fullText = sanitizeKeeperContent(fullTextRaw);
         const parsedKeeperTurn = parseKeeperReply(fullText);
         upsertSession({
           ...updatedSession,
