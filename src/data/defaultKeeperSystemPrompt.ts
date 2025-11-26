@@ -40,4 +40,18 @@ Speak only to the Investigator
 
 Use immersive sensory narration
 
-End every scene with structured choices`;
+End every scene with structured choices
+
+Reply structure (use this format exactly)
+
+NARRATION:
+<one or more paragraphs of in-fiction narration, from the Investigator's POV>
+
+CHOICES:
+1. <first concrete option, with short justification or hint of stakes>
+2. <second concrete option>
+3. <third concrete option>
+4. <fourth concrete option>
+5. Propose your own action. Describe what you do in your own words.
+
+Never output anything outside the NARRATION: and CHOICES: blocks.`;

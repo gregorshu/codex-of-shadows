@@ -11,6 +11,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { ChatMessage } from "@/types";
 import { createId } from "@/lib/app-data-context";
 import { useTranslation } from "@/lib/i18n";
+import { parseKeeperReply } from "@/lib/keeperParser";
 
 export default function PlayPage() {
   const params = useParams<{ sessionId: string }>();
@@ -93,17 +94,26 @@ export default function PlayPage() {
             chat: [...baseMessages, { ...keeperMessage, content: fullText }],
           });
         });
-        upsertSession({
-          ...updatedSession,
-          chat: [...baseMessages, { ...keeperMessage, content: fullText }],
-          lastOpenedAt: new Date().toISOString(),
-        });
-      } else {
+        const parsedKeeperTurn = parseKeeperReply(fullText);
         upsertSession({
           ...updatedSession,
           chat: [
             ...baseMessages,
-            { ...keeperMessage, content: t("keeperIntroFallback") },
+            { ...keeperMessage, content: fullText, meta: { parsedKeeperTurn } },
+          ],
+          lastOpenedAt: new Date().toISOString(),
+        });
+      } else {
+        const fallbackContent = t("keeperIntroFallback");
+        upsertSession({
+          ...updatedSession,
+          chat: [
+            ...baseMessages,
+            {
+              ...keeperMessage,
+              content: fallbackContent,
+              meta: { parsedKeeperTurn: parseKeeperReply(fallbackContent) },
+            },
           ],
           lastOpenedAt: new Date().toISOString(),
         });
@@ -112,7 +122,14 @@ export default function PlayPage() {
       console.error("LLM intro failed", error);
       upsertSession({
         ...updatedSession,
-        chat: [...baseMessages, { ...keeperMessage, content: t("keeperSilentFallback") }],
+        chat: [
+          ...baseMessages,
+          {
+            ...keeperMessage,
+            content: t("keeperSilentFallback"),
+            meta: { parsedKeeperTurn: parseKeeperReply(t("keeperSilentFallback")) },
+          },
+        ],
         lastOpenedAt: new Date().toISOString(),
       });
     } finally {
@@ -180,15 +197,27 @@ export default function PlayPage() {
             chat: [...updatedSession.chat, { ...keeperMessage, content: fullText }],
           });
         });
+        const parsedKeeperTurn = parseKeeperReply(fullText);
         upsertSession({
           ...updatedSession,
-          chat: [...updatedSession.chat, { ...keeperMessage, content: fullText }],
+          chat: [
+            ...updatedSession.chat,
+            { ...keeperMessage, content: fullText, meta: { parsedKeeperTurn } },
+          ],
           lastOpenedAt: new Date().toISOString(),
         });
       } else {
+        const fallbackContent = t("keeperMessageFallback");
         upsertSession({
           ...updatedSession,
-          chat: [...updatedSession.chat, { ...keeperMessage, content: t("keeperMessageFallback") }],
+          chat: [
+            ...updatedSession.chat,
+            {
+              ...keeperMessage,
+              content: fallbackContent,
+              meta: { parsedKeeperTurn: parseKeeperReply(fallbackContent) },
+            },
+          ],
           lastOpenedAt: new Date().toISOString(),
         });
       }
@@ -196,7 +225,14 @@ export default function PlayPage() {
       console.error("LLM chat failed", error);
       upsertSession({
         ...updatedSession,
-        chat: [...updatedSession.chat, { ...keeperMessage, content: t("keeperSilentFallback") }],
+        chat: [
+          ...updatedSession.chat,
+          {
+            ...keeperMessage,
+            content: t("keeperSilentFallback"),
+            meta: { parsedKeeperTurn: parseKeeperReply(t("keeperSilentFallback")) },
+          },
+        ],
         lastOpenedAt: new Date().toISOString(),
       });
     } finally {
@@ -218,6 +254,10 @@ export default function PlayPage() {
   };
 
   const goHome = () => router.push("/");
+
+  const handleChoiceClick = (index: number, text: string) => {
+    setInput(`I choose option ${index}: ${text}`);
+  };
 
   if (!session || !scenario || !investigator) {
     return (
@@ -241,7 +281,30 @@ export default function PlayPage() {
               <div key={message.id} className="flex flex-col gap-1">
                 <div className="text-xs uppercase tracking-[0.2em] text-subtle">{roleLabels[message.role]}</div>
                 <div className="rounded-xl bg-[#1d2026] px-4 py-3 text-sm leading-relaxed text-gray-100">
-                  {message.content}
+                  {message.role === "keeper" && message.meta?.parsedKeeperTurn ? (
+                    <div className="space-y-2">
+                      <div className="whitespace-pre-line">{message.meta.parsedKeeperTurn.narration}</div>
+                      {message.meta.parsedKeeperTurn.choices.length > 0 && (
+                        <div className="mt-3 border-t border-gray-700 pt-2 text-sm">
+                          <div className="font-semibold mb-1">Choices:</div>
+                          <ol className="space-y-1 list-decimal list-inside">
+                            {message.meta.parsedKeeperTurn.choices.map((choice, idx) => (
+                              <li key={idx}>
+                                <button
+                                  className="hover:underline text-gray-200 text-left"
+                                  onClick={() => handleChoiceClick(idx + 1, choice)}
+                                >
+                                  {choice}
+                                </button>
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    message.content
+                  )}
                 </div>
               </div>
             ))}

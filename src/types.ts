@@ -1,3 +1,5 @@
+import type { KeeperTurnParsed } from "@/lib/keeperParser";
+
 export type KeeperLanguage = "en" | "ru" | "fr" | "es";
 
 export type KeeperTheme = "light" | "dark" | "system" | "green" | "blue" | "red";
@@ -63,6 +65,7 @@ export interface ChatMessage {
     isSetupPhase?: boolean;
     isSystemNote?: boolean;
     wasCancelled?: boolean;
+    parsedKeeperTurn?: KeeperTurnParsed; // only for keeper messages
   };
 }
 
