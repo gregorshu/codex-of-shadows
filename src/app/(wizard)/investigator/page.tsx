@@ -47,7 +47,17 @@ export default function InvestigatorWizardPage() {
   const autoGenerate = async () => {
     const fallback = fallbackInvestigatorByLanguage[language];
     setLoading(true);
-    const prompt = `Create an investigator concept for a Call of Cthulhu one-shot.\nReturn:\n- Name\n- Occupation\n- 3–5 sentence background\n- 3 personality traits\n- A short summary of their main skills (not mechanical percentages)\nTone: grounded, slightly noir, not comedic.\nRespond in ${LANGUAGE_ENGLISH_NAMES[language]}.`;
+    const prompt = `Create an investigator concept for a Call of Cthulhu one-shot. Keep it concise and grounded.\nRespond exactly in this format with no extra commentary or markdown bullets:\nName: <name>\nOccupation: <occupation>\nBackground: <3-5 sentence background>\nTraits: <three traits, 1-2 words each separated by commas>\nSkills: <short summary of their main skills (not mechanical percentages)>\nRespond in ${LANGUAGE_ENGLISH_NAMES[language]}.`;
+
+    const cleanValue = (value: string) =>
+      value
+        .replace(/^[-*•\s]*/, "")
+        .replace(/^\*+|\*+$/g, "")
+        .replace(/^(Name|Occupation|Background|Traits|Skills)[:\s-]*/i, "")
+        .trim();
+
+    const normalizeKey = (key: string) => key.toLowerCase().replace(/[^a-z]/g, "");
+
     try {
       if (data.settings.llm.apiKey) {
         const stream = await callLLM({
@@ -60,20 +70,33 @@ export default function InvestigatorWizardPage() {
           ],
         });
         const fullText = await readLLMStream(stream);
-        const parts = fullText.split("\n").filter(Boolean);
-        const generatedTraits = parts
-          .slice(4, 7)
-          .map((t) => t.replace(/^-\s?/, "").trim())
+        const lines = fullText
+          .split("\n")
+          .map((line) => line.trim())
+          .filter(Boolean);
+
+        const parsed = lines.reduce<Record<string, string>>((acc, line) => {
+          const [label, ...rest] = line.split(":");
+          if (!rest.length) return acc;
+          const key = normalizeKey(label);
+          acc[key] = cleanValue(rest.join(":"));
+          return acc;
+        }, {});
+
+        const generatedTraits = (parsed.traits || parsed.personalitytraits || "")
+          .split(/[,;\n]/)
+          .map((trait) => trait.trim())
           .filter(Boolean)
+          .map((trait) => trait.split(/\s+/).slice(0, 2).join(" "))
           .slice(0, 3);
 
         setInvestigator((prev) => ({
           ...prev,
-          name: parts[0]?.replace(/Name:/i, "").trim() || fallback.name,
-          occupation: parts[1]?.replace(/Occupation:/i, "").trim() || fallback.occupation,
-          background: parts.slice(2, 4).join(" ") || fallback.background,
+          name: cleanValue(parsed.name || lines[0] || "") || fallback.name,
+          occupation: cleanValue(parsed.occupation || lines[1] || "") || fallback.occupation,
+          background: cleanValue(parsed.background || lines.slice(2, 4).join(" ")) || fallback.background,
           personalityTraits: generatedTraits.length ? generatedTraits : fallback.traits,
-          skillsSummary: parts.slice(7).join(" ") || fallback.skills,
+          skillsSummary: cleanValue(parsed.skills || parsed.mainskills || lines.slice(4).join(" ")) || fallback.skills,
         }));
       } else {
         setInvestigator((prev) => ({
