@@ -47,7 +47,7 @@ export default function InvestigatorWizardPage() {
   const autoGenerate = async () => {
     const fallback = fallbackInvestigatorByLanguage[language];
     setLoading(true);
-    const prompt = `Create an investigator concept for a Call of Cthulhu one-shot. Keep it concise and grounded.\nRespond ONLY with a single JSON object in this exact shape and nothing else (no code fences, no commentary):\n{"name":"<name>","occupation":"<occupation>","background":"<3-5 sentence background>","traits":["<trait 1>","<trait 2>","<trait 3>"],"skills":"<short summary of their main skills (not mechanical percentages)>"}\nRespond in ${LANGUAGE_ENGLISH_NAMES[language]}.`;
+    const prompt = `Create an investigator concept for a Call of Cthulhu one-shot. Keep it concise and grounded.\nRespond with ONLY a minified JSON object using exactly these keys and nothing else (no code fences, no commentary, no extra text):\n{"name":"<name>","occupation":"<occupation>","background":"<3-5 sentence background>","personalityTraits":["<trait 1>","<trait 2>","<trait 3>"],"skillsSummary":"<short summary of their main skills (not mechanical percentages)>"}\nUse ${LANGUAGE_ENGLISH_NAMES[language]} for all fields.`;
 
     const cleanValue = (value: string) =>
       value
@@ -64,27 +64,40 @@ export default function InvestigatorWizardPage() {
         .replace(/```json\s*|```/gi, "")
         .trim();
 
+      const jsonMatch = sanitized.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) return null;
+
       try {
-        const parsed = JSON.parse(sanitized) as {
+        const parsed = JSON.parse(jsonMatch[0]) as {
           name?: string;
           occupation?: string;
           background?: string;
           traits?: string[];
+          personalityTraits?: string[];
           skills?: string;
+          skillsSummary?: string;
         };
+
+        const parsedTraits = Array.isArray(parsed.personalityTraits)
+          ? parsed.personalityTraits
+          : Array.isArray(parsed.traits)
+            ? parsed.traits
+            : [];
 
         return {
           name: parsed.name ? cleanValue(parsed.name) : "",
           occupation: parsed.occupation ? cleanValue(parsed.occupation) : "",
           background: parsed.background ? cleanValue(parsed.background) : "",
-          traits: Array.isArray(parsed.traits)
-            ? parsed.traits
-                .map((trait) => cleanValue(String(trait)))
-                .filter(Boolean)
-                .map((trait) => trait.split(/\s+/).slice(0, 2).join(" "))
-                .slice(0, 3)
-            : [],
-          skills: parsed.skills ? cleanValue(parsed.skills) : "",
+          traits: parsedTraits
+            .map((trait) => cleanValue(String(trait)))
+            .filter(Boolean)
+            .map((trait) => trait.split(/\s+/).slice(0, 2).join(" "))
+            .slice(0, 3),
+          skills: parsed.skillsSummary
+            ? cleanValue(parsed.skillsSummary)
+            : parsed.skills
+              ? cleanValue(parsed.skills)
+              : "",
         };
       } catch {
         return null;
@@ -111,8 +124,11 @@ export default function InvestigatorWizardPage() {
         const structured = parseStructuredResponse(fullText);
 
         const parsed = lines.reduce<Record<string, string>>((acc, line) => {
+          if (line.startsWith("{") || line.endsWith("}")) return acc;
+
           const [label, ...rest] = line.split(":");
           if (!rest.length) return acc;
+
           const key = normalizeKey(label);
           acc[key] = cleanValue(rest.join(":"));
           return acc;
