@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/Button";
 import { useAppData } from "@/lib/app-data-context";
 import { AppShell } from "@/components/layout/AppShell";
 import { useTranslation } from "@/lib/i18n";
+import { TrashIcon } from "@radix-ui/react-icons";
 
 export default function HomePage() {
-  const { data } = useAppData();
+  const { data, removeSession } = useAppData();
   const router = useRouter();
   const { t } = useTranslation();
   const [showAllSessions, setShowAllSessions] = useState(false);
@@ -64,8 +65,19 @@ export default function HomePage() {
                           })}
                         </p>
                       </div>
-                      <div className="text-right text-xs text-subtle">
+                      <div className="flex items-start gap-3 text-right text-xs text-subtle">
                         <p>{t("homeOngoingLastMessage", { time: formattedTime })}</p>
+                        <Button
+                          variant="ghost"
+                          aria-label={t("homeOngoingDelete")}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            removeSession(session.id);
+                          }}
+                          className="p-1 text-subtle hover:text-gray-100"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   </Card>

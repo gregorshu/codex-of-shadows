@@ -24,6 +24,7 @@ const baseTranslations = {
     homeOngoingShowLess: "Show less",
     homeOngoingUnknownScenario: "Unknown scenario",
     homeOngoingUnknownInvestigator: "Unknown investigator",
+    homeOngoingDelete: "Delete session",
 
     settingsTitle: "Settings",
     settingsSubtitle: "Configure the Keeper language, theme, and LLM connection used across the app.",
@@ -167,6 +168,7 @@ export const translations: Record<KeeperLanguage, Record<TranslationKey, string>
     homeOngoingShowLess: "Скрыть",
     homeOngoingUnknownScenario: "Неизвестный сценарий",
     homeOngoingUnknownInvestigator: "Неизвестный следователь",
+    homeOngoingDelete: "Удалить сессию",
 
     settingsTitle: "Настройки",
     settingsSubtitle: "Выберите язык Хранителя и интерфейса, тему и подключение к LLM.",

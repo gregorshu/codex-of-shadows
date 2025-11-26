@@ -11,6 +11,7 @@ interface AppDataContextValue {
   upsertScenario: (scenario: Scenario) => void;
   upsertInvestigator: (investigator: Investigator) => void;
   upsertSession: (session: Session) => void;
+  removeSession: (sessionId: string) => void;
 }
 
 const AppDataContext = createContext<AppDataContextValue | undefined>(undefined);
@@ -68,6 +69,15 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
                   ...prev.sessions.filter((s) => s.id !== session.id),
                   { ...session, updatedAt: new Date().toISOString() },
                 ],
+              }
+            : prev
+        ),
+      removeSession: (sessionId) =>
+        setData((prev) =>
+          prev
+            ? {
+                ...prev,
+                sessions: prev.sessions.filter((session) => session.id !== sessionId),
               }
             : prev
         ),
