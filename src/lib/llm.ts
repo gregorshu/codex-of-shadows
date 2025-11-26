@@ -49,6 +49,63 @@ export async function callLLM({
   return response.body;
 }
 
+function parseLLMStreamLine(line: string): string {
+  const trimmed = line.trim();
+  if (!trimmed.startsWith("data:")) return trimmed;
+
+  const payload = trimmed.replace(/^data:\s*/, "");
+  if (!payload || payload === "[DONE]") return "";
+
+  try {
+    const parsed = JSON.parse(payload);
+    return (
+      parsed.choices?.[0]?.delta?.content ||
+      parsed.choices?.[0]?.message?.content ||
+      ""
+    );
+  } catch (error) {
+    console.warn("Failed to parse LLM stream line", error);
+    return "";
+  }
+}
+
+export async function readLLMStream(
+  stream: ReadableStream<Uint8Array>,
+  onToken?: (token: string) => void,
+): Promise<string> {
+  const reader = stream.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let fullText = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+
+    for (const line of lines) {
+      const token = parseLLMStreamLine(line);
+      if (token) {
+        fullText += token;
+        onToken?.(token);
+      }
+    }
+  }
+
+  if (buffer) {
+    const token = parseLLMStreamLine(buffer);
+    if (token) {
+      fullText += token;
+      onToken?.(token);
+    }
+  }
+
+  return fullText;
+}
+
 function mapChatRoleToLLMRole(role: ChatMessage["role"]): LLMMessage["role"] {
   if (role === "keeper") return "assistant";
   if (role === "player") return "user";
