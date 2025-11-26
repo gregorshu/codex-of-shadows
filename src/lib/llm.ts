@@ -119,7 +119,7 @@ export function buildKeeperMessages({
   newUserMessage,
   messages,
   keeperSystemPrompt,
-  historyLimit = 12,
+  historyLimit = Number.POSITIVE_INFINITY,
 }: {
   session: Session;
   scenario: Scenario;
