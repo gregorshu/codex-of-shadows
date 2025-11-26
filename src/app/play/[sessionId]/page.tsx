@@ -358,7 +358,7 @@ export default function PlayPage() {
                   {t("cancelLabel")}
                 </Button>
               </div>
-              <Button onClick={sendMessage} disabled={isStreaming || !input.trim()}>
+              <Button onClick={() => sendMessage()} disabled={isStreaming || !input.trim()}>
                 {t("sendLabel")}
               </Button>
             </div>
